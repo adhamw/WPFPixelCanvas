@@ -34,23 +34,13 @@ namespace WPFPixelCanvas.Canvas.Models
             // With great power, comes great responsibilites etc.
             unsafe
             {
-                //We retrieve a byte pointer to our data.
-                //Data are arranged like this:  [r][g][b][a][r][g][b][a][r][g][b][a]...
-                //                               ↓ 
-                //Pointer = 0:                  [r][g][b][a][r][g][b][a][r][g][b][a]...
-                //Increase the pointer by one:
-                //                                  ↓ 
-                //Pointer = 1:                  [r][g][b][a][r][g][b][a][r][g][b][a]...
-                //etc.
-                //To declare the color value for a single pixel, we must set
-                //a value for each color component [r],[g],[b] and [a].
                 var bytes = (byte*)buffer.ToPointer();          // Retrieve a byte pointer to our graphics buffer
 
                 //Clear the screen, by writing same value to every pixel
                 //Normally we would address each pixel individually ( by its 4 components )
                 //However; since we are writing the same value everywhere, we can
                 //simply traverse through every byte in our buffer )
-                for (int i = 0; i < bytesinbuffer; i++) { bytes[i] = 0; }
+                for (int i = 0; i < bytesinbuffer; i++) { bytes[i] = 255; }
 
 
                 //Draw 10.000 random dots
