@@ -1,0 +1,10 @@
+﻿<Application x:Class="WPFPixelCanvas.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:WPFPixelCanvas"
+             StartupUri="Canvas/Views/MainWindow.xaml"
+             >
+             <Application.Resources>
+        
+    </Application.Resources>
+</Application>
