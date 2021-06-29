@@ -15,11 +15,13 @@ namespace WPFPixelCanvas.Canvas.ViewModels
         //Constructor
         public ViewModel(int width, int height)
         {
+
             //Various plot component implementations
-            //CPattern1 plotter = new CPattern1(width, height);   // Makes color patterns based on x,y position
-            Pattern2 plotter = new Pattern2(width, height);   // Makes wavy patterns 
-            //CPattern3 plotter = new CPattern3(width, height);     // Makes random dots
-            //CMyPattern plotter = new (width, height);     // Makes random dots
+            //Pattern1 plotter = new(width, height);            // Makes color patterns based on x,y position
+            //Pattern2 plotter = new(width, height);            // Makes wavy patterns 
+            //Pattern3 plotter = new(width, height);            // Makes random dots
+            //Pattern_FillBlue plotter = new(width, height);    // Makes random dots
+            PatternTemplate plotter = new(width, height);    // Makes random dots
 
             Canvas = new CanvasManager(plotter);
             StartCommand = new RelayCommand(o => StartPlotting(), o => !Canvas.IsEnabled);

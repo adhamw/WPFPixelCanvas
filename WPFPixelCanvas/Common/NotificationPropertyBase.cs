@@ -26,6 +26,8 @@ namespace WPFPixelCanvas.common
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+
+
     }
 
 

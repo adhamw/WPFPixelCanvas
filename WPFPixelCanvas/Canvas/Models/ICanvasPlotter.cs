@@ -13,7 +13,8 @@ namespace WPFPixelCanvas.Canvas.Models
         int Height { get; }
 
         //Interface
-        void Plot(IntPtr buffer, int bytesperpixel, long refreshcount);
+        //        void Plot(IntPtr buffer, int bytesperpixel, long refreshcount);
+        byte[] Plot(int bytesperpixel, int bytesperline, long refreshcount);
 
     }
 }

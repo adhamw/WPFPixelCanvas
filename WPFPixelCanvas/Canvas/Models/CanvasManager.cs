@@ -18,7 +18,8 @@ namespace WPFPixelCanvas.Canvas.Models
     public class CanvasManager : NotificationPropertyBase
     {
         //## Private fields/properties
-        private int _bytesPerPixel { get; set; } = 4;       // RGBA = 4 pixels
+        private int _bytesPerPixel { get; set; }
+        private int _bytesPerLine { get; set; }
         private ICanvasPlotter _plotter { get; set; }   // Custom object that defines plot function
         private bool _enabled { get; set; } = false;    // Flag that decides whether we should update image buffer or not ( by running plot function )
         private bool _runOnce { get; set; } = false;    // Flag that decides whether we should paint once or untill Enabledflag is lowered 
@@ -36,7 +37,10 @@ namespace WPFPixelCanvas.Canvas.Models
             Height = plotter.Height;   // lines per image. E.g. 600
 
             //Define our bitmap
-            Buffer = new WriteableBitmap(Width, Height, 96, 96, PixelFormats.Pbgra32, null);
+            var pixelformat = PixelFormats.Pbgra32; // I.e. [b][g][r][a]
+            Buffer = new WriteableBitmap(Width, Height, 96, 96, pixelformat, null);
+            _bytesPerLine = Buffer.BackBufferStride;
+            _bytesPerPixel = pixelformat.BitsPerPixel >> 3;
 
             // Register the paint function  
             // Ensures application keeps repainting our target control (<Image>)
@@ -53,13 +57,10 @@ namespace WPFPixelCanvas.Canvas.Models
         public void DoPaint(object sender, EventArgs e)
         {
             if (!IsEnabled) { return; }                                         // Skip painting updates if not enabled
-
-            Buffer.Lock();                                                      // Buffer ready for fast manipulation
-            _plotter.Plot(Buffer.BackBuffer, _bytesPerPixel,_refreshCounter);   // Calls custom paint function            
+            var pixeldata = _plotter.Plot(_bytesPerPixel,_bytesPerLine, _refreshCounter);   // Calls custom paint function            
             _refreshCounter++;
             if (_runOnce) { IsEnabled = false; _runOnce = false; }              // Lowers enable flag to stop painting, if in runonce mode
-            Buffer.AddDirtyRect(new Int32Rect(0, 0, Width, Height));            // Ensures we update the whole <Image> area
-            Buffer.Unlock();                                                    // Image manipulation done, release buffer
+            Buffer.WritePixels(new Int32Rect(0, 0, Width, Height), pixeldata, _bytesPerPixel * Width, 0);
         }
         public void Stop() { if (IsEnabled) { IsEnabled = false; } } // Lowers IsEnabled flag
         public void Start() { if (!IsEnabled) { _refreshCounter = 0; IsEnabled = true; } } // Raises IsEnabled flag
