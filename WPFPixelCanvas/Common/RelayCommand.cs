@@ -7,14 +7,14 @@ using System.Windows.Input;
 
 namespace WPFPixelCanvas.common
 {
-    public class CRelayCommand : ICommand
+    public class RelayCommand : ICommand
     {
         //Private fields
         private Action<object> _Execute;
         private Func<object, bool> _CanExecute; //Alternatively Predicate<object> , same thing
 
         //Constructor
-        public CRelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
         {
             _Execute = execute;
             _CanExecute = canExecute;

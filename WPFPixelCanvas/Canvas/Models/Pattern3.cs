@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace WPFPixelCanvas.Canvas.Models
 {
-    public class CPattern3 : ICanvasPlotter
+    public class Pattern3 : ICanvasPlotter
     {
         //Constructor
-        public CPattern3(int width, int height)
+        public Pattern3(int width, int height)
         {
             Width = width;      // Defines width of plot area ( e.g. 800 pixels )
             Height = height;    // Defines height of plot area ( e.g. 600 pixels )

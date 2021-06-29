@@ -2,10 +2,10 @@
 
 namespace WPFPixelCanvas.Canvas.Models
 {
-    public class CMyPattern : ICanvasPlotter
+    public class MyPattern : ICanvasPlotter
     {
         //Constructor
-        public CMyPattern(int width, int height)
+        public MyPattern(int width, int height)
         {
             Width = width;      // Defines width of plot area ( e.g. 800 pixels )
             Height = height;    // Defines height of plot area ( e.g. 600 pixels )

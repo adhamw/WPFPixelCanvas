@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace WPFPixelCanvas.Canvas.ViewModels
 {
-    public class ViewModel : CNotificationPropertyBase
+    public class ViewModel : NotificationPropertyBase
     {
         //Local fields/properties
 
@@ -17,23 +17,23 @@ namespace WPFPixelCanvas.Canvas.ViewModels
         {
             //Various plot component implementations
             //CPattern1 plotter = new CPattern1(width, height);   // Makes color patterns based on x,y position
-            CPattern2 plotter = new CPattern2(width, height);   // Makes wavy patterns 
+            Pattern2 plotter = new Pattern2(width, height);   // Makes wavy patterns 
             //CPattern3 plotter = new CPattern3(width, height);     // Makes random dots
             //CMyPattern plotter = new (width, height);     // Makes random dots
 
-            Canvas = new CCanvasManager(plotter);
-            StartCommand = new CRelayCommand(o => StartPlotting(), o => !Canvas.IsEnabled);
-            StopCommand = new CRelayCommand(o => StopPlotting(), o => Canvas.IsEnabled);
-            RunOnceCommand = new CRelayCommand(o => PlotOnce(), o => !Canvas.IsEnabled);
+            Canvas = new CanvasManager(plotter);
+            StartCommand = new RelayCommand(o => StartPlotting(), o => !Canvas.IsEnabled);
+            StopCommand = new RelayCommand(o => StopPlotting(), o => Canvas.IsEnabled);
+            RunOnceCommand = new RelayCommand(o => PlotOnce(), o => !Canvas.IsEnabled);
         }
 
         //Public properties
-        public CCanvasManager Canvas { get; set; }
+        public CanvasManager Canvas { get; set; }
 
         //Commands
-        public CRelayCommand StartCommand { get; set; }
-        public CRelayCommand StopCommand { get; set; }
-        public CRelayCommand RunOnceCommand { get; set; }
+        public RelayCommand StartCommand { get; set; }
+        public RelayCommand StopCommand { get; set; }
+        public RelayCommand RunOnceCommand { get; set; }
 
         //Command behavior
         private void StopPlotting() { Canvas.Stop(); }

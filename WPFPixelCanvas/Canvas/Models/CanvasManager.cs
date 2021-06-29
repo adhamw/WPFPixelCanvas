@@ -15,7 +15,7 @@ namespace WPFPixelCanvas.Canvas.Models
     /// <summary>
     /// Creates and manages a canvas that allows fast pixel operations
     /// </summary>
-    public class CCanvasManager : CNotificationPropertyBase
+    public class CanvasManager : NotificationPropertyBase
     {
         //## Private fields/properties
         private int _bytesPerPixel { get; set; } = 4;       // RGBA = 4 pixels
@@ -25,7 +25,7 @@ namespace WPFPixelCanvas.Canvas.Models
         private long _refreshCounter { get; set; } = 0;   // Counts up between buffer updates
 
         //## Constructor
-        public CCanvasManager(ICanvasPlotter plotter)
+        public CanvasManager(ICanvasPlotter plotter)
         {
             //Verify input
             if (plotter == null) { throw new ArgumentException(); } //Check that we weren't handed an empty object
