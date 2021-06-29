@@ -17,15 +17,14 @@ namespace WPFPixelCanvas.Canvas.ViewModels
         {
             //Various plot component implementations
             //CPattern1 plotter = new CPattern1(width, height);   // Makes color patterns based on x,y position
-            //CPattern2 plotter = new CPattern2(width, height);   // Makes wavy patterns 
-            CPattern3 plotter = new CPattern3(width, height);     // Makes random dots
+            CPattern2 plotter = new CPattern2(width, height);   // Makes wavy patterns 
+            //CPattern3 plotter = new CPattern3(width, height);     // Makes random dots
+            //CMyPattern plotter = new (width, height);     // Makes random dots
 
             Canvas = new CCanvasManager(plotter);
-            //CompositionTarget.Rendering += Canvas.doPaint; //Hooks up event that processes everytime window updates?
-
-            StartCommand = new CRelayCommand(o => startPlotting(), o => !Canvas.IsEnabled);
-            StopCommand = new CRelayCommand(o => stopPlotting(), o => Canvas.IsEnabled);
-            RunOnceCommand = new CRelayCommand(o => plotOnce(), o => !Canvas.IsEnabled);
+            StartCommand = new CRelayCommand(o => StartPlotting(), o => !Canvas.IsEnabled);
+            StopCommand = new CRelayCommand(o => StopPlotting(), o => Canvas.IsEnabled);
+            RunOnceCommand = new CRelayCommand(o => PlotOnce(), o => !Canvas.IsEnabled);
         }
 
         //Public properties
@@ -37,9 +36,9 @@ namespace WPFPixelCanvas.Canvas.ViewModels
         public CRelayCommand RunOnceCommand { get; set; }
 
         //Command behavior
-        private void stopPlotting() { Canvas.stop(); }
-        private void startPlotting() { Canvas.start(); }
-        private void plotOnce() { Canvas.runOnce(); }
+        private void StopPlotting() { Canvas.Stop(); }
+        private void StartPlotting() { Canvas.Start(); }
+        private void PlotOnce() { Canvas.RunOnce(); }
 
     }
 }

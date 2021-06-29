@@ -20,7 +20,7 @@ namespace WPFPixelCanvas.Canvas.Models
         public int Height { get; private set; }
 
         //Public interface
-        public void plot(IntPtr buffer, int bytesperpixel, long refreshcounter = 0)
+        public void Plot(IntPtr buffer, int bytesperpixel, long refreshcounter = 0)
         {
             int width = Width;                          // Storing widht in local variable ( caching for speed ) 
             int height = Height;                        // ditto
