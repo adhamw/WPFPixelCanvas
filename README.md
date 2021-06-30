@@ -30,10 +30,12 @@ Similarly, I have tried to keep it simple for for the pixel plotting part. It's 
 ├── Canvas  
 │   │
 │   ├── Models  
-│   │   ├──── CCanvasManager.cs  ##   Manages the graphics buffer. Allows binding to <Image>  
-│   │   ├──── CPattern1.cs       ##   Example plotting code module  
-│   │   ├──── CPattern2.cs       ##   Ditto  
-│   │   ├──── CPattern3.cs       ##   Ditto  
+│   │   ├──── CanvasManager.cs      ##   Manages the graphics buffer. Allows binding to <Image>  
+│   │   ├──── Pattern1.cs           ##   Example plotting code module  
+│   │   ├──── Pattern2.cs           ##   Ditto  
+│   │   ├──── Pattern3.cs           ##   Ditto  
+│   │   ├──── Pattern_FillBlue.cs   ##   Fills the screen with blue
+│   │   ├──── PatternTemplate.cs    ##   Empty pattern code, can be used as a base for creating new ones
 │   │   └──── ICanvasPlotter.cs  ##   Interface definition for the plotting module implementation  
 │   │  
 │   ├── ViewModels  
@@ -43,8 +45,8 @@ Similarly, I have tried to keep it simple for for the pixel plotting part. It's 
 │       └──── MainWindow.cs      ##   The screen space accompanied by start/stop buttons.  
 │   
 └── Common  
-    ├──── CRelayCommand.cs              ##   Used to create bindable commands properties in the ViewModel.  
-    └──── CNotificationPropertyBase.cs  ##   Base for a property that can notify the UI when its value changes  
+    ├──── RelayCommand.cs              ##   Used to create bindable commands properties in the ViewModel.  
+    └──── NotificationPropertyBase.cs  ##   Base for a property that can notify the UI when its value changes  
 ```
 
 # REQUIREMENTS
@@ -62,9 +64,9 @@ To make use of either of them, open "Canvas/ViewModels/Viewmode.cs".
 Have a look at the constructor. You will find these lines:
 ```
     //Various plot component implementations
-    //CPattern1 plotter = new CPattern1(width, height);   // Makes color patterns based on x,y position
-    //CPattern2 plotter = new CPattern2(width, height);   // Makes wavy patterns 
-    CPattern3 plotter = new CPattern3(width, height);     // Makes random dots
+    //Pattern1 plotter = new(width, height);   // Makes color patterns based on x,y position
+    //Pattern2 plotter = new(width, height);   // Makes wavy patterns 
+    Pattern3 plotter = new(width, height);     // Makes random dots
 ```
 Comment out the current line ( CPattern3 ) and uncomment one of the others to change plotting module.
 Recompile and run to see the plotting module in action.
@@ -77,8 +79,11 @@ Recompile and run to see the plotting module in action.
 
 It should look something like this:
 ```
-    public class CMyPattern : ICanvasPlotter
+    public class MyPattern : ICanvasPlotter
     {
+        //Local fields
+        private byte[] _buffer { get; set; }
+
         //Public properties
         public int Width { get; private set; }
         public int Height { get; private set; }
@@ -91,7 +96,7 @@ It should look something like this:
         }
 
         //Public interface
-        public void plot(IntPtr buffer, int bytesperpixel, long refreshcounter = 0)
+        public byte[] Plot(int bytesperpixel, int bytesperline, long refreshcounter = 0)
         {
             ... // Your code goes here
         }
@@ -101,52 +106,37 @@ It should look something like this:
 ## Traversing image coordinates 
 The plot function is where we want to write our plotting code.
 For example; let us fill the whole screen with a blue color.
-To do what we modify the plot() function as follows:
+We set up the  plot() function as follows:
 ```
-        public void plot(IntPtr buffer, int bytesperpixel, long refreshcounter = 0)
+        public byte[] Plot(IntPtr buffer, int bytesperpixel, long refreshcounter = 0)
         {
-            int pos = 0;
-            unsafe
-            {
-                // Retrieve a byte pointer to our graphics buffer
-                var bytes = (byte*)buffer.ToPointer();
+            int width = Width;                          // Storing widht in local variable ( caching for speed ) 
+            int height = Height;                        // ditto
 
-                //Run through all lines in image
-                for (int y = 0; y < Height; y++)
+            //Initialize buffer if not set
+            int bytesinbuffer = bytesperline * height;  // Number of bytes needed for the whole buffer
+            if (_buffer == null) { _buffer = new byte[bytesinbuffer]; }
+
+            int pos = 0;    // Buffer index
+
+            //Run through all lines in image
+            for (int y = 0; y < height; y++)
+            {
+                //Run through every pixel on a line
+                for (int x = 0; x < width; x++)
                 {
                     //Run through every pixel on a line
                     for (int x = 0; x < Width; x++)
                     { ... our color assignment code goes here ... }
                 }
-
             }
-
-
         }
 ```
 
-This setup traverses every x and y value in our image.
-There's a couple of mysterious things that begs explanation.
-
-This line extracts a direct pointer to our graphcis buffer:
-```
-  var bytes = (byte*)buffer.ToPointer();
-```
-This is the very heart of the speed attributed to this solution.
-It is not important that you understand exactly what it does, just realize that you can use the 'bytes' variable to directly access
-the graphics buffer.
-
-We need to notify .NET that we are operating in an unsafe manner ( we are using byte pointers ):
-```
-  unsafe
-  {
-     ... Code that involves pointer operations ...
-  }
-```
+This setup traverses every x and y value in our image. What is remaining, is the code to actually calculate and 
+store color data for each pixel.
 
 ## The buffer layout
-
-We now have code that traverses every coordinate (x,y) in our image, and we have direct access to the graphics buffer.
 Our graphics buffer is laid out as follows:
 ```
     ( Buffer )       [b][g][r][a][b][g][r][a][b][g][r][a]...
@@ -197,10 +187,10 @@ If we wish to set the color of Pixel 2 to blue, we would assign values as follow
 We do this in code as follows:
 ```
   // Setting the color to Black, for the pixel at (x,y):
-  bytes[pos + 0] = 255;   //Blue component
-  bytes[pos + 1] = 0;     //Green component 
-  bytes[pos + 2] = 0;     //Red component 
-  bytes[pos + 3] = 255;   //Alpha component
+  _buffer[pos + 0] = 255;   //Blue component
+  _buffer[pos + 1] = 0;     //Green component 
+  _buffer[pos + 2] = 0;     //Red component 
+  _buffer[pos + 3] = 255;   //Alpha component
 
   pos += bytesperpixel;   // Moving buffer pointer forward
 ```
@@ -218,60 +208,76 @@ If we add this code to our previous code for the plot function and compbine
 it with the class code, we get the final product:
 
 ```
-  public class CMyPattern : ICanvasPlotter
-  {
-  |      //Public properties
-  |     public int Width { get; private set; }
-  |     public int Height { get; private set; }
-  |
-  |     //Constructor
-  |     public CPattern1(int width, int height)
-  |     {
-  |         Width = width;      // Defines width of plot area ( e.g. 800 pixels )
-  |         Height = height;    // Defines height of plot area ( e.g. 600 pixels )
-  |     }
-  |
-  |     //Public interface
-  |     public void plot(IntPtr buffer, int bytesperpixel, long refreshcounter = 0)
-  |     {
-  |     |   int pos = 0;
-  |     |   unsafe
-  |     |   {
-  |     |       // Retrieve a byte pointer to our graphics buffer
-  |     |       var bytes = (byte*)buffer.ToPointer();
-  |     |
-  |     |       //Run through all lines in image
-  |     |       for (int y = 0; y < Height; y++)
-  |     |       {
-  |     |       |   //Run through every pixel on a line
-  |     |       |   for (int x = 0; x < Width; x++)
-  |     |       |   { 
-  |     |       |       // Setting the color to Black, for the pixel at (x,y):
-  |     |       |       bytes[pos + 0] = 255;   //Blue component
-  |     |       |       bytes[pos + 1] = 0;     //Green component 
-  |     |       |       bytes[pos + 2] = 0;     //Red component 
-  |     |       |       bytes[pos + 3] = 255;   //Alpha component
-  |     |       |
-  |     |       |       pos += bytesperpixel;   // Moving buffer pointer forward
-  |     |       |   }
-  |     |       }
-  |     |   }
-  |     }
-  }
+    public class MyPattern : ICanvasPlotter
+    {
+        //Local fields
+        private byte[] _buffer { get; set; }
+
+        //Constructor
+        public Pattern_FillBlue(int width, int height)
+        {
+            Width = width;      // Defines width of plot area ( e.g. 800 pixels )
+            Height = height;    // Defines height of plot area ( e.g. 600 pixels )
+        }
+
+        //Public properties
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+
+        //Public interface
+        public byte[] Plot(int bytesperpixel, int bytesperline, long refreshcounter = 0)
+        {
+            int width = Width;                          // Storing widht in local variable ( caching for speed ) 
+            int height = Height;                        // ditto
+
+            //Initialize buffer if not set
+            int bytesinbuffer = bytesperline * height;  // Number of bytes needed for the whole buffer
+            if (_buffer == null) { _buffer = new byte[bytesinbuffer]; }
+
+            //Sets all values to white, with no transparency ( I.e. [255][255][255]... )
+            for (int i = 0; i < bytesinbuffer; i++) { _buffer[i] = 255; }
+
+            int pos = 0;    // Buffer index
+
+            //Run through all lines in image
+            for (int y = 0; y < height; y++)
+            {
+                //Run through every pixel on a line
+                for (int x = 0; x < width; x++)
+                {
+                    // Setting the color blue
+                    byte colorR = 0;       //
+                    byte colorG = 0;       //  ==> (R, G, B) = (0, 0, 255) = Blue
+                    byte colorB = 255;     // 
+
+                    // Setting the color to Black, for the pixel at (x,y):
+                    _buffer[pos + 0] = colorB;   //Blue component
+                    _buffer[pos + 1] = colorG;   //Green component 
+                    _buffer[pos + 2] = colorR;   //Red component 
+                    _buffer[pos + 3] = 255; //Alpha component
+
+                    pos += bytesperpixel;  // Moving buffer pointer forward
+                }
+            }
+
+            //Return buffer ( reference value )
+            return _buffer;
+        }
+    }
 
 ```
 
-If this new class was saved as "Canvas/Models/CMypattern.cs", you could now
+Given that this new class was saved as "Canvas/Models/MyPattern.cs", you could now
 head over to the "Canvas/ViewModels/ViewModel.cs" constructor.
 
 Comment out the previous plotter object, and add your own:
 
 ```
     //Various plot component implementations
-    //CPattern1 plotter = new CPattern1(width, height);   // Makes color patterns based on x,y position
-    //CPattern2 plotter = new CPattern2(width, height);   // Makes wavy patterns 
-    //CPattern3 plotter = new CPattern3(width, height);   // Makes random dots
-    CMyPattern plotter = new CMyPattern(width, height);   // Your custom pattern
+    //Pattern1 plotter = new(width, height);   // Makes color patterns based on x,y position
+    //Pattern2 plotter = new(width, height);   // Makes wavy patterns 
+    //Pattern3 plotter = new(width, height);   // Makes random dots
+    MyPattern plotter = new(width, height);    // Your custom pattern
 ```
 
 Compile and run it, press the "Run once" button and you should see a blue screen.
