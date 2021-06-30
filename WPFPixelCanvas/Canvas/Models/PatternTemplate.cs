@@ -51,9 +51,9 @@ namespace WPFPixelCanvas.Canvas.Models
                     double bval = 0.0;      // Blue component value
 
                     // Storing color values in buffer
-                    _buffer[pos + 0] = (byte)rval;   //Blue component
+                    _buffer[pos + 0] = (byte)bval;   //Blue component
                     _buffer[pos + 1] = (byte)gval;   //Green component 
-                    _buffer[pos + 2] = (byte)bval;   //Red component 
+                    _buffer[pos + 2] = (byte)rval;   //Red component 
                     _buffer[pos + 3] = 255;      //Alpha component
 
                     pos += bytesperpixel;  // Moving buffer pointer forward
