@@ -25,7 +25,10 @@ namespace WPFPixelCanvas.Canvas.Models.PlotModules
 
             //Prepare a cell factory that produces complex GOL cells
             int tanglecount = 15;
-            GameOfLifeCellFactory cellfactory = new GameOfLifeCellFactory(GameOfLifeCellTypes.Complex, tanglecount);
+            //GameOfLifeCellFactory cellfactory = new GameOfLifeCellFactory(GameOfLifeCellTypes.Complex, tanglecount);
+            //GameOfLifeCellFactory cellfactory = new GameOfLifeCellFactory(GameOfLifeCellTypes.ComplexToo, tanglecount);
+            //GameOfLifeCellFactory cellfactory = new GameOfLifeCellFactory(GameOfLifeCellTypes.ComplexAsWell, tanglecount);
+            GameOfLifeCellFactory cellfactory = new GameOfLifeCellFactory(GameOfLifeCellTypes.ComplexIndeed, tanglecount);
             _engine = new GameOfLifeEngineOOP(width, height, 5, cellfactory);
 
             //Create a palette
@@ -78,12 +81,12 @@ namespace WPFPixelCanvas.Canvas.Models.PlotModules
                     if(!isalive) { (rval, gval, bval) = (0, 0, 0); }    // If cell not alive, leave black
                     else
                     {
-                        rval = basecolor.Item1 *(1 - 0.5 * Math.Sin( Age * 0.01)); // The trigonemetric adjustment is just to shift colors
-                        gval = basecolor.Item2 *(1 - 0.5 * Math.Cos( Age * 0.01)); // they do not affect the simulation state 
-                        bval = basecolor.Item3 *(1 - 0.5 * Math.Sin( Age * 0.01)) ;
+                        rval = basecolor.Item1;  // *(1 - 0.5 * Math.Sin( Age * 0.01)); // The trigonemetric adjustment is just to shift colors
+                        gval = basecolor.Item2;  // *(1 - 0.5 * Math.Cos( Age * 0.01)); // they do not affect the simulation state 
+                        bval = basecolor.Item3;  // *(1 - 0.5 * Math.Sin( Age * 0.01)) ;
                     }
 
-                    // Storing color values in buffer
+                    // Storing color values in buffer0
                     _buffer[pos + 0] = (byte)bval;   //Blue component
                     _buffer[pos + 1] = (byte)gval;   //Green component 
                     _buffer[pos + 2] = (byte)rval;   //Red component 
