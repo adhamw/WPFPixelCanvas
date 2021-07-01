@@ -24,9 +24,9 @@ namespace WPFPixelCanvas.Canvas.Models.PlotModules
             Height = height;    // Defines height of plot area ( e.g. 600 pixels )
 
             //Prepare a cell factory that produces complex GOL cells
-            int tanglecount = 1114;
+            int tanglecount = 15;
             GameOfLifeCellFactory cellfactory = new GameOfLifeCellFactory(GameOfLifeCellTypes.Complex, tanglecount);
-            _engine = new GameOfLifeEngineOOP(width, height, 15, cellfactory);
+            _engine = new GameOfLifeEngineOOP(width, height, 5, cellfactory);
 
             //Create a palette
             _randomSource = new Random();
@@ -78,9 +78,9 @@ namespace WPFPixelCanvas.Canvas.Models.PlotModules
                     if(!isalive) { (rval, gval, bval) = (0, 0, 0); }    // If cell not alive, leave black
                     else
                     {
-                        rval = basecolor.Item1;// + 100 * Math.Sin( Age * 0.01);
-                        gval = basecolor.Item2;// + 100 * Math.Sin( Age * 0.01);
-                        bval = basecolor.Item3;// + 100 * Math.Sin( Age * 0.01);
+                        rval = basecolor.Item1 *(1 - 0.5 * Math.Sin( Age * 0.01)); // The trigonemetric adjustment is just to shift colors
+                        gval = basecolor.Item2 *(1 - 0.5 * Math.Cos( Age * 0.01)); // they do not affect the simulation state 
+                        bval = basecolor.Item3 *(1 - 0.5 * Math.Sin( Age * 0.01)) ;
                     }
 
                     // Storing color values in buffer
