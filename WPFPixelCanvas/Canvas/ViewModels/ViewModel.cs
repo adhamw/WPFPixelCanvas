@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WPFPixelCanvas.Canvas.Models.PlotModules;
 
 namespace WPFPixelCanvas.Canvas.ViewModels
 {
@@ -15,13 +16,17 @@ namespace WPFPixelCanvas.Canvas.ViewModels
         //Constructor
         public ViewModel(int width, int height)
         {
+            //## Various plot component implementations
+            //## 
+            //Pattern_FillBlue plotter = new(width, height);    // Fills screen with blue
 
-            //Various plot component implementations
             //Pattern1 plotter = new(width, height);            // Makes color patterns based on x,y position
             //Pattern2 plotter = new(width, height);            // Makes wavy patterns 
             //Pattern3 plotter = new(width, height);            // Makes random dots
-            //Pattern_FillBlue plotter = new(width, height);    // Makes random dots
-            PatternTemplate plotter = new(width, height);    // Makes random dots
+
+            //Pattern_GameOfLife plotter = new(width, height);        // Single class implementation of GOL
+            //Pattern_OOPGameOfLife plotter = new(width, height);     // OOP implementation of GOL
+            Pattern_OOPGameOfLife_Color plotter = new(width, height); // Same as above, but takes advantage of OOP to introduce color
 
             Canvas = new CanvasManager(plotter);
             StartCommand = new RelayCommand(o => StartPlotting(), o => !Canvas.IsEnabled);

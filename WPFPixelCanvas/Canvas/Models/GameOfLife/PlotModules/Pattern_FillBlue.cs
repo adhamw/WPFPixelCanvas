@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WPFPixelCanvas.Canvas.Models
+namespace WPFPixelCanvas.Canvas.Models.PlotModules
 {
     public class Pattern_FillBlue : ICanvasPlotter
     {

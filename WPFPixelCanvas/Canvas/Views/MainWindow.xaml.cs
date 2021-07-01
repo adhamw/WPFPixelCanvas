@@ -24,7 +24,7 @@ namespace WPFPixelCanvas.Canvas.Views
         public MainWindow()
         {
             InitializeComponent();
-            ViewModel dcMain = new ViewModel(400, 300);
+            ViewModel dcMain = new ViewModel(500, 400);
             this.DataContext = dcMain;
 
         }

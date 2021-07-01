@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WPFPixelCanvas.Canvas.Models
+namespace WPFPixelCanvas.Canvas.Models.PlotModules
 {
-    public class Pattern1 : ICanvasPlotter
+    public class Pattern2 : ICanvasPlotter
     {
         //Local fields
         private byte[] _buffer { get; set; }
 
         //Constructor
-        public Pattern1(int width, int height)
+        public Pattern2(int width, int height)
         {
             Width = width;      // Defines width of plot area ( e.g. 800 pixels )
             Height = height;    // Defines height of plot area ( e.g. 600 pixels )
@@ -43,25 +43,36 @@ namespace WPFPixelCanvas.Canvas.Models
                 //Run through every pixel on a line
                 for (int x = 0; x < width; x++)
                 {
-                    // Calculating colors based on x and y values
-                    byte colorR = (byte)((255 * y / height));
-                    byte colorG = (byte)((x * y + refreshcounter) % 256);
-                    byte colorB = (byte)((x / (y + 1)) % 256);
+                    //Offset the x and y values
+                    double ox = Math.Abs(x + 50.0 * Math.Cos((refreshcounter) * 0.012 + Math.Sin((y + refreshcounter) * 0.02)));
+                    double oy = Math.Abs(y + 50.0 * Math.Cos((refreshcounter) * 0.017 + Math.Cos((x + refreshcounter) * 0.02)));
 
-                    // Setting the color to Black, for the pixel at (x,y):
+                    //Convert from coordinates to color values
+                    double rval = 255.0 * (oy / height);                // The percentage of the max value for y, multiplied by 255
+                    double gval = 255.0 * (ox + oy) / (width + height); // The percentage of the max value of x+y, multiplied by 255
+                    double bval = 255.0 * (ox / width);                 // The percentage of the max value for x, multiplied by 255
+
+                    // Cast double values to byte values
+                    byte colorR = (byte)rval;
+                    byte colorG = (byte)gval;
+                    byte colorB = (byte)bval;
+
+                    // Storing color values in buffer
                     _buffer[pos + 0] = colorB;   //Blue component
-                    _buffer[pos + 1] = colorG;   //Green component ==> (R,G,B) = (0,0,0) = Black
+                    _buffer[pos + 1] = colorG;   //Green component 
                     _buffer[pos + 2] = colorR;   //Red component 
-                    _buffer[pos + 3] = 255; //Alpha component
-
+                    _buffer[pos + 3] = 255;      //Alpha component
 
                     pos += bytesperpixel;  // Moving buffer pointer forward
                 }
             }
 
-            //Return buffer ( reference value )
             return _buffer;
+
+
+
         }
+
     }
 }
 
