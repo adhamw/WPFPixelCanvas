@@ -6,117 +6,191 @@ using System.Threading.Tasks;
 
 namespace WPFPixelCanvas.Canvas.Models.Boids
 {
-    //Defines a Boid object. It can move, it can follow other boids.
+    /// <summary>
+    ///  Defines a 'boid'. It can move around. 
+    ///  It can track/lead other boids. It has its own color
+    /// </summary>
     public class Boid
     {
-        //Private fields
-        private Boid _leaderBoid;
+        //## Private fields
         private Random _randomSource { get; set; }
-        private Vector3D _positionLimitsMin { get; set; }
-        private Vector3D _positionLimitsMax { get; set; }
-        private Vector3D _accelerationLimitsMin { get; set; }
-        private Vector3D _accelerationLimitsMax { get; set; }
-        private double _deltaTime;
-        private double _accelerationFactor { get; set; }
 
-        //Constructor(s)
-        public Boid(Vector3D positionLimitsMin, Vector3D positionLimitsMax, Vector3D accelerationLimitsMin, Vector3D accelerationLimitsMax, double accelerationfactor, double deltaTime)
-        {
-            Vector3D startPos = GetRandomPosition(); // No start position given, choosing a random one
-            init(positionLimitsMin, positionLimitsMax, accelerationLimitsMin, accelerationLimitsMax, accelerationfactor, deltaTime, startPos);
-        }
-        public Boid(Vector3D positionLimitsMin, Vector3D positionLimitsMax, Vector3D accelerationLimitsMin, Vector3D accelerationLimitsMax, double accelerationfactor, double deltaTime, Vector3D startPos)
-        {
-            init(positionLimitsMin, positionLimitsMax, accelerationLimitsMin, accelerationLimitsMax, accelerationfactor, deltaTime, startPos);
-        }
-        private void init(Vector3D positionLimitsMin, Vector3D positionLimitsMax, Vector3D accelerationLimitsMin, Vector3D accelerationLimitsMax, double accelerationfactor, double deltaTime, Vector3D startPos)
+
+        //## Constructor(s)
+        public Boid(Random randomsource, int boidId)
         {
             //Initialize private fields
-            _randomSource = new Random();           // Feeds us random numbers
-            _positionLimitsMin = positionLimitsMin; // Defines the boids world that
-            _positionLimitsMax = positionLimitsMax; // boids movement
-            _accelerationLimitsMax = accelerationLimitsMax; // How quickly can boid change its movement
-            _accelerationLimitsMin = accelerationLimitsMin; // How quickly can boid change its movement
-            _accelerationFactor = accelerationfactor; // Affects how tight relationship between distance and acceleration is
-            _deltaTime = deltaTime;                 // Timestep
-            _leaderBoid = this;                     // If no other boids to follow
+            _randomSource = randomsource;           // Feeds us random numbers
+            Id = boidId;                            // Allows telling this boid apart from other boids. 
 
-            //Initialize public properties
-            Position = startPos;                    // Boid start at this position
-            TargetPosition = GetRandomPosition();   // Boid want to move to some random position ( within our world  )
-
+            //Default boid parameters
+            AccelerationFactor = 0.02;                      // Affects how "fast" boid can turn
+            DeltaTime = 0.01;                               // Affects .. everything
+            Color = new Tuple<byte, byte, byte>(0, 0, 0);   // Boid color defaults to black 
+            Leaders = Array.Empty<Boid>();                  // No other boids to follow by default
+            CurrentLeader = null;                           // No current leader
+            IsLeaderBoid = true;                            // All boids are born leaderboids ( since they do not have any other boids to follow )
+            Position = GetRandomPosition();                 // Boid start at this position
+            StartPos = GetRandomPosition();                 // Where should the boid be born ( on-screen )?
+            TargetPosition = GetRandomPosition();           // Where should the boid go next?
+            Acceleration = GetRandomAcceleration();         // How fast should it go there?
+            Velocity = GetRandomVelocity();                 // ..ditto
         }
 
 
-        //Public interface
-        public void update()
-        {
-            // Determine where Boid should move
-            AssignLeaderBoid();                             // Determine which of the leaderboids to follow
-            if (_leaderBoid.Id != this.Id)                  // Determine new target coordinates 
-            { TargetPosition = _leaderBoid.Position; }      //   .. Follow the closest of leaderboids
-            else { TargetPosition = GetRandomPosition(); }  //   ..  No boid to follow, select target randomly
+        //## Public interface
 
-            //Update movement parameters
-            UpdateAccelerationVector(); // Boid accelerate towards the boid it follows
-            Velocity = Velocity + Acceleration * _deltaTime;    // New boid velocity
-            Position = Position + Velocity * _deltaTime;        // New boid position
+        /// <summary>
+        /// Progresses boid one time step forward.
+        /// </summary>
+        public void Update()
+        {
+            //Determine where the boid should go next
+            IdentifyCurrentTarget();
+
+            //Update boid state ( I.e. position, velocity, acceleration etc )
+            double distanceToTarget = TargetPosition.GetDistanceFrom(Position);                        // The distance between boid and current target
+            UpdateAccelerationVector(distanceToTarget);                                         // Boid accelerate towards the boid it follows
+
+            Velocity = Velocity + Acceleration * DeltaTime;                                     // Update boid velocity
+            Velocity.ClipComponentsToLimits(BoidLimits.VelocityMin, BoidLimits.VelocityMax);    // Ensure the velocity-value does not grow too large ( or else some boids may shoot off to far off the screen )
+
+            Position = Position + Velocity * DeltaTime;                                         // Update boid position
+            Position.ClipComponentsToLimits(BoidLimits.PositionsMin, BoidLimits.PositionsMax);  // Ensure position does not exceed screen values    
         }
 
-        //Public interface
-        public Vector3D GetRandomPosition()
+        /// <summary>
+        /// Changes boid to following boid
+        /// </summary>
+        /// <param name="leaders"></param>
+        public void SetLeaderBoids(Boid[] leaders)
         {
-            double x = _positionLimitsMin.X + _randomSource.NextDouble() * (_positionLimitsMax.X - _positionLimitsMin.X);
-            double y = _positionLimitsMin.Y + _randomSource.NextDouble() * (_positionLimitsMax.Y - _positionLimitsMin.Y);
-            double z = _positionLimitsMin.Z + _randomSource.NextDouble() * (_positionLimitsMax.Z - _positionLimitsMin.Z);
+            if (leaders.Length == 0) { return; }                        // If no leaders received, do not update
+            if (leaders.Length == 1 && leaders[0].Id == Id) { return; } // Cannot follow itself
 
-            return new Vector3D(x, y, z);
+            IsLeaderBoid = false;                                       // Boid should follow its leaderboids
+            Leaders = leaders;                                          // One or more other boids this boid can follow            
         }
-        public double GetDistanceFrom(Boid other) { return other.Position.GetDistanceFrom(this.Position);}
-        public double GetSquaredDistanceFrom(Boid other) { return other.Position.GetDistanceSquaredFrom(other.Position);}
-
-        //Public properties       
-        public Vector3D Position { get; set; }
-        public Vector3D TargetPosition { get; set; }
-        public Vector3D Velocity{ get; set; }
-        public Vector3D Acceleration{ get; set; }
-        public double LeaderType { get; set; } // [0..1]. 1=Perfect leader, 0=Perfect follower
-        public Boid[] Leaders { get; set; }  // This boid will follow the closes of these boids
-
-        public int Id { get; set; } //Identifies this boid uniquely
-
-        //Private helpers
-        //Update acceleration vector
-        private void AssignLeaderBoid()
+        public Vector2D GetRandomAcceleration()
         {
-            _leaderBoid = this;
-            double leaderBoidDistance = double.MaxValue;
+            if (_randomSource == null) { _randomSource = new Random(); }
+            double x = BoidLimits.AccelerationMin.X + _randomSource.NextDouble() * (BoidLimits.AccelerationMax.X - BoidLimits.AccelerationMin.X);
+            double y = BoidLimits.AccelerationMin.Y + _randomSource.NextDouble() * (BoidLimits.AccelerationMax.Y - BoidLimits.AccelerationMin.Y);
+            //double z = BoidLimits.AccelerationMin.Z + _randomSource.NextDouble() * (BoidLimits.AccelerationMax.Z - BoidLimits.AccelerationMin.Z);
+
+            return new Vector2D(x, y);
+        }
+        public Vector2D GetRandomVelocity()
+        {
+            if (_randomSource == null) { _randomSource = new Random(); }
+            double x = BoidLimits.VelocityMin.X + _randomSource.NextDouble() * (BoidLimits.VelocityMax.X - BoidLimits.VelocityMin.X);
+            double y = BoidLimits.VelocityMin.Y + _randomSource.NextDouble() * (BoidLimits.VelocityMax.Y - BoidLimits.VelocityMin.Y);
+            //double z = BoidLimits.VelocityMin.Z + _randomSource.NextDouble() * (BoidLimits.VelocityMax.Z - BoidLimits.VelocityMin.Z);
+
+            return new Vector2D(x, y);
+        }
+        public Vector2D GetRandomPosition()
+        {
+            if (_randomSource == null) { _randomSource = new Random(); }
+            double x = BoidLimits.PositionsMin.X + _randomSource.NextDouble() * (BoidLimits.PositionsMax.X - BoidLimits.PositionsMin.X);
+            double y = BoidLimits.PositionsMin.Y + _randomSource.NextDouble() * (BoidLimits.PositionsMax.Y - BoidLimits.PositionsMin.Y);
+            //double z = BoidLimits.PositionsMin.Z + _randomSource.NextDouble() * (BoidLimits.PositionsMax.Z - BoidLimits.PositionsMin.Z);
+
+            return new Vector2D(x, y);
+        }
+        public double GetDistanceFrom(Boid other) { return other.Position.GetDistanceFrom(this.Position); }
+        public double GetSquaredDistanceFrom(Boid other) { return other.Position.GetDistanceSquaredFrom(this.Position); }
+
+
+        //## Public properties       
+        public int Id { get; set; }                         // Identifies this boid uniquely
+        public bool IsLeaderBoid { get; set; }              // Will this boid lead or follow
+        public Vector2D Position { get; set; }              // Where on screen?
+        public Vector2D TargetPosition { get; set; }        // Where is it going?
+        public Vector2D Velocity { get; set; }              // How fast is it going?
+        public Vector2D Acceleration { get; set; }          // How fast can it adjust?
+        public Boid[] Leaders { get; private set; }         // Boid will follow the nearest leader
+        public Boid CurrentLeader { get; set; }             // Currently tracking this boid
+        public Tuple<byte, byte, byte> Color { get; set; }     // Boid color
+        public double AccelerationFactor { get; set; }      // Affects impact of acceleration 
+        public double DeltaTime { get; set; }               // The timestep. Affects everything.
+        public Vector2D StartPos { get; set; }              // Where on screen is the boid born
+
+
+        //## Private helpers
+
+        /// <summary>
+        /// Sets the TargetPosition for the boid
+        /// </summary>
+        private void IdentifyCurrentTarget()
+        {
+            double distanceToTarget;
+
+            // Leader boids roam around, picking target locations by random
+            if (IsLeaderBoid)
+            {
+                //Only update with new target, if we are in vicinity of our previous target
+                distanceToTarget = TargetPosition.GetDistanceFrom(Position);
+                if (distanceToTarget < DeltaTime * 2) { TargetPosition = GetRandomPosition(); } // Leaderboids pick random targets to move to next
+            }
+            else { FollowNearestLeader(); } // Non-leader-boid, find the nearest leader, and follow it
+        }
+
+        /// <summary>
+        /// Determines which of the leaderboids to follow
+        /// </summary>
+        private void FollowNearestLeader()
+        {
+            //If current leader not set, select the first one
+            if (CurrentLeader == null) { CurrentLeader = Leaders[0]; }
+
+            //Use distance to current leader boid as reference
+
+            double mindistance = CurrentLeader.GetSquaredDistanceFrom(this); // dist = sqrt(x^2+y^2) => distA < distB ==> distA^2 < distB^2 ( saves a square root operation )
+            bool changedLeaderBoid = false;
+
+            //Pick the leader closest
             foreach (Boid leader in Leaders)
             {
-                double distance = leader.GetDistanceFrom(this);  // Get the distance to other boid
-                if (distance < leaderBoidDistance)
+                double distance = leader.GetSquaredDistanceFrom(this);  // Get the distance to other boid
+                if (distance < mindistance)
                 {
-                    _leaderBoid = leader;               // Updating which boid to follow
-                    leaderBoidDistance = distance;      // The distance to the closes leader boid ( in the moment ) 
+                    CurrentLeader = leader;               // Updating which boid to follow
+                    mindistance = distance;      // The distance to the closes leader boid ( in the moment ) 
+                    changedLeaderBoid = true;
                 }
             }
+
+            if (changedLeaderBoid)
+            {
+                //Updaating the targetposition
+                TargetPosition = CurrentLeader.Position;
+
+                //Adjust the boid color so it matches the leader 
+                double adjusted_r = (CurrentLeader.Color.Item1 + Color.Item1) >> 1; // Simply averaging the color of leader and current boid ( brings it closer to the leader boid )
+                double adjusted_g = (CurrentLeader.Color.Item2 + Color.Item2) >> 1; // .. ditto
+                double adjusted_b = (CurrentLeader.Color.Item3 + Color.Item3) >> 1; // .. ditto
+                Color = new Tuple<byte, byte, byte>((byte)adjusted_r, (byte)adjusted_g, (byte)adjusted_b);
+            }
+
+
         }
-        private void UpdateAccelerationVector()
+        private void UpdateAccelerationVector(double distancetotarget)
         {
-            // Note!! The arithmetic operations for Vector3D are overloaded to
-            // performa operations componentwise.
-            // e.g.: a / b = [ a.x/b.x , a.Y/b.Y ,  a.Z/b.Z)
+            // Note!! The arithmetic operations for Vector2D are overloaded to
+            // perform a operations componentwise.
+            // e.g.: a / b = [ a.x/b.x , a.Y/b.Y )
 
             //Calculate new values for acceleration
-            Vector3D distanceToTarget = TargetPosition - Position;
-            Vector3D accelerationTarget = _accelerationFactor * distanceToTarget;
+            Vector2D deltapos = TargetPosition - Position;
+            Vector2D accelerationTarget = AccelerationFactor * distancetotarget * deltapos;
 
             //Ensure we don't end up with values that are too large
-            accelerationTarget.ClipComponentsToLimits(_accelerationLimitsMin, _accelerationLimitsMax);
+            accelerationTarget.ClipComponentsToLimits(BoidLimits.AccelerationMin, BoidLimits.AccelerationMax);
 
             // Weight the change ( to smoothen it a bit )
-            // Using formulat: new value = 3/4*new value + 1/4*oldvalue
-            Acceleration = 0.25 * (3.0 * accelerationTarget + 1 * Acceleration);
+            // Using formula: new value = 2/3*new value + 1/3*oldvalue
+            Acceleration = 0.3333 * (2.0 * accelerationTarget + 1.0 * Acceleration);
         }
 
 

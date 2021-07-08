@@ -43,8 +43,8 @@ namespace WPFPixelCanvas.Canvas.Models.GameOfLife.OOP.GameOfLifeCells
 
             //Modified rule to take tangles into the equation
             IsAlive = friendlytanglecount > 6;
-            if(!IsAlive){ TangleId = Neighbours[_randomSource.Next(Neighbours.Length - 1)].TangleId; }
-            
+            if (!IsAlive) { TangleId = Neighbours[_randomSource.Next(Neighbours.Length - 1)].TangleId; }
+
         }
 
         //Public Propeties

@@ -34,9 +34,9 @@ namespace WPFPixelCanvas.Canvas.Models.PlotModules
             //Create a palette
             _randomSource = new Random();
             _palette = new Tuple<byte, byte, byte>[tanglecount];
-            for(int i=0;i<tanglecount;i++)
+            for (int i = 0; i < tanglecount; i++)
             {
-                _palette[i] = new Tuple<byte,byte,byte>((byte)_randomSource.Next(255), (byte)_randomSource.Next(255), (byte)_randomSource.Next(255));
+                _palette[i] = new Tuple<byte, byte, byte>((byte)_randomSource.Next(255), (byte)_randomSource.Next(255), (byte)_randomSource.Next(255));
             }
 
 
@@ -78,7 +78,7 @@ namespace WPFPixelCanvas.Canvas.Models.PlotModules
                     // ** Color calculation code **
                     var basecolor = _palette[tangleid];                 // Each tangle has their own assigned color
                     double rval, gval, bval;
-                    if(!isalive) { (rval, gval, bval) = (0, 0, 0); }    // If cell not alive, leave black
+                    if (!isalive) { (rval, gval, bval) = (0, 0, 0); }    // If cell not alive, leave black
                     else
                     {
                         rval = basecolor.Item1;  // *(1 - 0.5 * Math.Sin( Age * 0.01)); // The trigonemetric adjustment is just to shift colors

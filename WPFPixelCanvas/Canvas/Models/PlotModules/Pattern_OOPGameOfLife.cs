@@ -23,7 +23,7 @@ namespace WPFPixelCanvas.Canvas.Models.PlotModules
 
             //Prepare a cell factory that produces normal GOL cells
             GameOfLifeCellFactory cellfactory = new GameOfLifeCellFactory(GameOfLifeCellTypes.Standard);
-            _engine = new GameOfLifeEngineOOP(width, height, 5, cellfactory );
+            _engine = new GameOfLifeEngineOOP(width, height, 5, cellfactory);
         }
 
         //Public properties

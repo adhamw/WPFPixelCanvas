@@ -24,7 +24,7 @@ namespace WPFPixelCanvas.Canvas.Models.GameOfLife.Standard
         private int CellCount { get; set; }
 
         //Construct GameOfLife playingfield
-        public GameOfLifeEngine(int width, int height, int  probability)
+        public GameOfLifeEngine(int width, int height, int probability)
         {
             //Initalize
             _randomSource = new Random();
@@ -33,7 +33,7 @@ namespace WPFPixelCanvas.Canvas.Models.GameOfLife.Standard
             //Register map dimensions
             Height = height;
             Width = width;
-            
+
             // Populate map with inhabitants
             int all = 0;
             for (int x = 0; x < width; x++)
@@ -50,19 +50,19 @@ namespace WPFPixelCanvas.Canvas.Models.GameOfLife.Standard
         {
             int xmax = Width - 1;
             int ymax = Height - 1;
-            
-            for(int x=0;x<Width;x++)
+
+            for (int x = 0; x < Width; x++)
             {
-                for(int y=0;y<Height;y++)
+                for (int y = 0; y < Height; y++)
                 {
                     int livecellcount = 0;
                     //Count number of live cells in the surroundings
                     //Above and below
-                    if (y > 0) { if (_map[x , y - 1]) { livecellcount++; } }            // Right above current cell
-                    if (y < ymax) { if (_map[x , y + 1]) { livecellcount++; } }         // Right below current cell
+                    if (y > 0) { if (_map[x, y - 1]) { livecellcount++; } }            // Right above current cell
+                    if (y < ymax) { if (_map[x, y + 1]) { livecellcount++; } }         // Right below current cell
 
                     // Left side
-                    if (x > 0) 
+                    if (x > 0)
                     {
                         if (_map[x - 1, y]) { livecellcount++; }                        // Left of curren cell
                         if (y > 0) { if (_map[x - 1, y - 1]) { livecellcount++; } }     // Upper left corner
@@ -73,7 +73,7 @@ namespace WPFPixelCanvas.Canvas.Models.GameOfLife.Standard
                     {
                         if (_map[x + 1, y]) { livecellcount++; }
                         if (y > 0) { if (_map[x + 1, y - 1]) { livecellcount++; } }
-                        if (y < ymax) {if(_map[x + 1, y + 1]) { livecellcount++; } }
+                        if (y < ymax) { if (_map[x + 1, y + 1]) { livecellcount++; } }
                     }
 
                     //Check if cell survives/gets born

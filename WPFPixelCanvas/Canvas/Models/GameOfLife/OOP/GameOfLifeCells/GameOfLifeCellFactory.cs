@@ -16,7 +16,7 @@ namespace WPFPixelCanvas.Canvas.Models.GameOfLife.OOP.GameOfLifeCells
 
 
         //Constructor
-        public GameOfLifeCellFactory(GameOfLifeCellTypes celltype, int tanglecount=1)
+        public GameOfLifeCellFactory(GameOfLifeCellTypes celltype, int tanglecount = 1)
         {
             _randomSource = new Random();
             _cellType = celltype;
@@ -28,11 +28,11 @@ namespace WPFPixelCanvas.Canvas.Models.GameOfLife.OOP.GameOfLifeCells
         {
             int tangleid;
             IGameOfLifeCell retval;
-            switch(_cellType)
+            switch (_cellType)
             {
                 case GameOfLifeCellTypes.Complex:
                     tangleid = _randomSource.Next(_tangleCount);
-                    retval = new GameOfLifeComplexCell(isalive,tangleid);
+                    retval = new GameOfLifeComplexCell(isalive, tangleid);
                     break;
                 case GameOfLifeCellTypes.ComplexToo:
                     tangleid = _randomSource.Next(_tangleCount);

@@ -57,7 +57,7 @@ namespace WPFPixelCanvas.Canvas.Models
         public void DoPaint(object sender, EventArgs e)
         {
             if (!IsEnabled) { return; }                                         // Skip painting updates if not enabled
-            var pixeldata = _plotter.Plot(_bytesPerPixel,_bytesPerLine, _refreshCounter);   // Calls custom paint function            
+            var pixeldata = _plotter.Plot(_bytesPerPixel, _bytesPerLine, _refreshCounter);   // Calls custom paint function            
             _refreshCounter++;
             if (_runOnce) { IsEnabled = false; _runOnce = false; }              // Lowers enable flag to stop painting, if in runonce mode
             Buffer.WritePixels(new Int32Rect(0, 0, Width, Height), pixeldata, _bytesPerPixel * Width, 0);

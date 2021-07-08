@@ -46,7 +46,7 @@ namespace WPFPixelCanvas.Canvas.Models.GameOfLife.OOP.GameOfLifeCells
             isBornByFriends = !IsAlive && friendlytanglecount > 7;              // Taking tangles into account 
 
             //Determine if live or dead
-            IsAlive = ( isSuperior || isBorn || isBornByFriends); // || hasfriends;
+            IsAlive = (isSuperior || isBorn || isBornByFriends); // || hasfriends;
             if (isBorn) { Age = 0; }
             //If it didn't survive, move to a different tangle
             if (!IsAlive) { TangleId = Neighbours[_randomSource.Next(Neighbours.Length - 1)].TangleId; }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace WPFPixelCanvas.common
 {
-   public class NotificationPropertyBase : INotifyPropertyChanged
+    public class NotificationPropertyBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

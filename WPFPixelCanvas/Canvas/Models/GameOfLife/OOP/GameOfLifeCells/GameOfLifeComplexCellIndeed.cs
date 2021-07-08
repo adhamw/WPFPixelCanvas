@@ -38,7 +38,7 @@ namespace WPFPixelCanvas.Canvas.Models.GameOfLife.OOP.GameOfLifeCells
 
             //Modified rule to take tangles into the equation
             bool survived = (livecellcount > 3);
-            bool isBorn = ( friendlytanglecount > 7) ;
+            bool isBorn = (friendlytanglecount > 7);
             IsAlive = isBorn || survived;
             if (!IsAlive) { TangleId = Neighbours[_randomSource.Next(Neighbours.Length - 1)].TangleId; }
         }

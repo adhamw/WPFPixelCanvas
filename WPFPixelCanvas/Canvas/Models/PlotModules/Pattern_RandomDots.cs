@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace WPFPixelCanvas.Canvas.Models.PlotModules
 {
-    public class Pattern3 : ICanvasPlotter
+    public class Pattern_RandomDots : ICanvasPlotter
     {
         //Local fields
         private byte[] _buffer { get; set; }
 
         //Constructor
-        public Pattern3(int width, int height)
+        public Pattern_RandomDots(int width, int height)
         {
             Width = width;      // Defines width of plot area ( e.g. 800 pixels )
             Height = height;    // Defines height of plot area ( e.g. 600 pixels )

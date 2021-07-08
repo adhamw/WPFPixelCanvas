@@ -13,8 +13,8 @@ namespace WPFPixelCanvas.Canvas.Models.PlotModules
         //Local fields
         private byte[] _buffer { get; set; }
         private GameOfLifeEngine _engine { get; set; }
-        
-        
+
+
         //Constructor
         public Pattern_GameOfLife(int width, int height)
         {

@@ -42,10 +42,10 @@ namespace WPFPixelCanvas.Canvas.Models.GameOfLife.OOP.GameOfLifeCells
             averagNeighboureAge = averagNeighboureAge / Neighbours.Length;
 
             //Modified rule to take tangles into the equation
-            bool isBorn = !IsAlive && (friendlytanglecount>2 || livecellcount==3);                          
+            bool isBorn = !IsAlive && (friendlytanglecount > 2 || livecellcount == 3);
 
             //If no cell born, select new tangle for this pixel
-            if (!isBorn && Age>0.3* averagNeighboureAge) { TangleId = Neighbours[_randomSource.Next(Neighbours.Length - 1)].TangleId; }
+            if (!isBorn && Age > 0.3 * averagNeighboureAge) { TangleId = Neighbours[_randomSource.Next(Neighbours.Length - 1)].TangleId; }
             else { IsAlive = true; }
 
         }
