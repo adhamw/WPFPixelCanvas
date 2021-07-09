@@ -109,33 +109,20 @@ namespace WPFPixelCanvas.Canvas.Models
 
             //Fill in bottom 3 lines with random values            
             int pos = sourceData.Length - 1; //Starting at end of buffer
-
-            int higdensitycentre = _randomSource.Next(width);
             
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 2; i++)
             {
-                for(int j = 0; j < width; j++) 
-                {
-                    double distanceformula = (higdensitycentre - j) * (0.1 + 0.1 * Math.Sin(0.01 * refreshCounter));
-
-                    double distanceToDensityCentre = 100.0 / (1+(int)Math.Abs(distanceformula));
-                    int density = (int)distanceToDensityCentre;
-                    bool isfire = _randomSource.Next(100) < density;
-                    double firevalue = isfire ? 1.0 : _randomSource.NextDouble();
-                    sourceData[pos--] = firevalue;
-                }
+                for (int j = 0; j < width; j++) 
+                { sourceData[pos--] = _randomSource.NextDouble();}
             }
 
             //Average values starting at the top
             pos = 0;
             int onelineoffset = width;
             int twolineoffset = 2 * width;
-            int sourceDataLength = sourceData.Length;
 
             for(int i = 0; i < height - 2; i++)
             {
-                double yoffset = 115 * Math.Cos(0.01*(i+refreshCounter));
-
                 for (int j = 0; j < width; j++)
                 {
                     double sllp = sourceData[(pos + onelineoffset - 1 ) ];      // Second line, left pixel
@@ -143,7 +130,7 @@ namespace WPFPixelCanvas.Canvas.Models
                     double slrp = sourceData[(pos + onelineoffset + 1 ) ];      // Second line, right pixel
                     double tlcp = sourceData[(pos + twolineoffset  ) ];          // Third line, center pixel
                                                                             //                    destData[pos++] = (sllp + slcp + slrp + tlcp) / 4.1;    // Average values
-                    destData[pos] = ( sllp+slcp+slrp+tlcp )/4.02;
+                    destData[pos] = ( sllp+slcp+slrp+tlcp )/3.985;
                     pos++;
                 }
             }
@@ -154,7 +141,7 @@ namespace WPFPixelCanvas.Canvas.Models
             // Reference our pixel buffer
             byte basecolor_R = 255;
             byte basecolor_G = 130; // (byte)(128.0 - 127.0 * Math.Cos(refreshCounter * 0.005));
-            byte basecolor_B = 30; // (byte)(128.0 - 127.0 * Math.Sin(refreshCounter * 0.01));
+            byte basecolor_B = 20; // (byte)(128.0 - 127.0 * Math.Sin(refreshCounter * 0.01));
             var currentbuffer = _pixelBuffers[_pixelBufferIndex];
 
             pos = 0;
@@ -163,10 +150,9 @@ namespace WPFPixelCanvas.Canvas.Models
             {
                 for (int j = 0; j < width; j++)
                 {
-
                     byte r = (byte)(basecolor_R * destData[pos]);
                     byte g = (byte)(basecolor_G * destData[pos]);
-                    byte b = (byte)(basecolor_B* destData[pos]);
+                    byte b = (byte)(basecolor_B );
 
                     currentbuffer[screenpos + 0] = g;
                     currentbuffer[screenpos + 1] = b;
