@@ -29,8 +29,8 @@ namespace WPFPixelCanvas.Canvas.ViewModels
             //Pattern_OOPGameOfLife plotter = new(width, height);       // OOP implementation of GOL
             //Pattern_OOPGameOfLife_Color plotter = new(width, height); // Same as above, but takes advantage of OOP to introduce color
 
-            Pattern_Boids plotter = new(width, height);               // Implements a simple boids simulator
-
+            //Pattern_Boids plotter = new(width, height);               // Implements a simple boids simulator
+            Pattern_BasicFire plotter = new Pattern_BasicFire(width, height);
 
 
             Canvas = new CanvasManager(plotter);

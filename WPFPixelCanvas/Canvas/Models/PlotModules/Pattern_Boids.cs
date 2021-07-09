@@ -46,7 +46,6 @@ namespace WPFPixelCanvas.Canvas.Models
 
 
         //## Public interface
-        private bool _isDecreasing { get; set; } = false;
         public byte[] Plot(int bytesPerPixel, int bytesPerLine, long refreshCounter = 0)
         {
             int width = Width;                          // Storing width in local variable ( caching for speed ) 
@@ -99,6 +98,8 @@ namespace WPFPixelCanvas.Canvas.Models
             // Return buffer ( reference value )
             return _buffer;
         }
+
+
     }
 }
 

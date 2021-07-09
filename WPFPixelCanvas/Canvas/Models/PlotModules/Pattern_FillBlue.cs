@@ -44,9 +44,10 @@ namespace WPFPixelCanvas.Canvas.Models.PlotModules
                 for (int x = 0; x < width; x++)
                 {
                     // Setting the color blue
-                    byte colorR = 0;       //
-                    byte colorG = 0;       //  ==> (R, G, B) = (0, 0, 255) = Blue
-                    byte colorB = 255;     // 
+                    byte colorR = 0;     //
+                    byte colorG = 0;     //  ==> (R, G, B) = (0, 0, 255) = Blue
+                    byte colorB = 255;   // 
+
 
                     // Setting the color to Black, for the pixel at (x,y):
                     _buffer[pos + 0] = colorB;   //Blue component
