@@ -46,13 +46,14 @@ namespace WPFPixelCanvas.Canvas.Models
             _randomSource = new Random();
         }
 
+
         //## Public properties
         public int Width { get; private set; }
         public int Height { get; private set; }
 
 
         //## Public interface
-        private void initializeDataBuffers(int width, int height, int numberOfBuffers, double startvalue = 0.0)       
+        private void InitializeDataBuffers(int width, int height, int numberOfBuffers, double startvalue = 0.0)       
         {
             _dataBuffers = new List<double[]>();
 
@@ -65,7 +66,7 @@ namespace WPFPixelCanvas.Canvas.Models
             }
             _dataBufferIndex = 0;
         }
-        private void initializeColorBuffers(int bytesPerLine, int bytesperpixel, int height, int numberOfBuffers)
+        private void InitializePixelBuffers(int bytesPerLine, int bytesperpixel, int height, int numberOfBuffers)
         {
             _pixelBuffers = new List<byte[]>();
 
@@ -89,17 +90,16 @@ namespace WPFPixelCanvas.Canvas.Models
             _pixelBufferIndex = 0; // Point to the first buffer
             
         }
-
         public byte[] Plot(int bytesPerPixel, int bytesPerLine, long refreshCounter = 0)
         {
             int width = Width;                          // Storing width in local variable ( caching for speed ) 
             int height = Height;                        // ditto
 
             //Initialize buffer if not set
-            if (_dataBuffers == null) initializeDataBuffers(width, height, 2);
+            if (_dataBuffers == null) InitializeDataBuffers(width, height, 2);
             if (_pixelBuffers == null)
             {
-                initializeColorBuffers(bytesPerLine, bytesPerPixel, height, 3);
+                InitializePixelBuffers(bytesPerLine, bytesPerPixel, height, 3);
 
             }
 
