@@ -20,7 +20,7 @@ namespace WPFPixelCanvas.Canvas.Models
         private List<byte[]> _pixelBuffers { get; set; }    // Allows working with multiple pixel buffers
         private int _pixelBufferIndex { get; set; }         // Tracks the current pixel buffer in use
         private Random _randomSource { get; set; }          // Common source for random data
-        private LineBuilder _lineDrawer;                    // Component that offers line drawing functionality
+        private PixelLineBuilder _lineDrawer;                    // Component that offers line drawing functionality
 
 
         //## Constructor(s)
@@ -45,7 +45,7 @@ namespace WPFPixelCanvas.Canvas.Models
             if (_pixelBuffers == null)
             {
                 InitializePixelBuffers(bytesPerLine, bytesPerPixel, Height, 1); // Creates a single buffer
-                _lineDrawer = new LineBuilder(Width, Height, bytesPerPixel, bytesPerLine);
+                _lineDrawer = new PixelLineBuilder(Width, Height, bytesPerPixel, bytesPerLine);
             }
 
             //Get a reference to our pixel buffer

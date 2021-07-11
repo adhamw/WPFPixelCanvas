@@ -32,6 +32,7 @@ namespace WPFPixelCanvas.Canvas.ViewModels
             //Pattern_Boids plotter = new(width, height);               // Implements a simple boids simulator
             Pattern_BasicFire plotter = new Pattern_BasicFire(width, height);
             //Pattern_Lines  plotter = new Pattern_Lines(width, height);
+            //Pattern_LineFire plotter = new Pattern_LineFire(width, height);
 
 
             Canvas = new CanvasManager(plotter);

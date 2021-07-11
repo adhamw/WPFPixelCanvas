@@ -29,7 +29,6 @@ namespace WPFPixelCanvas.Canvas.Models
     public class Pattern_BasicFire : ICanvasPlotter
     {
         //## Local fields
-        //private byte[] _screenBuffer { get; set; }
         private List<double[]> _dataBuffers { get; set; }
         private List<byte[]> _pixelBuffers { get; set; }
         private int _dataBufferIndex { get; set; }
@@ -53,7 +52,68 @@ namespace WPFPixelCanvas.Canvas.Models
 
 
         //## Public interface
-        private void InitializeDataBuffers(int width, int height, int numberOfBuffers, double startvalue = 0.0)       
+        public byte[] Plot(int bytesPerPixel, int bytesPerLine, long refreshCounter = 0)
+        {
+            //Initialize buffers if not set
+            if (_dataBuffers == null) InitializeDataBuffers(Width, Height, 2);
+            if (_pixelBuffers == null) { InitializePixelBuffers(bytesPerLine, bytesPerPixel, Height, 3);}
+
+            //Reference our data buffers
+            var sourceData = _dataBuffers[_dataBufferIndex % 2]; // %2(mod operation) rolls index around once 
+            var destData = _dataBuffers[_dataBufferIndex++ % 2]; // we reach the end of our buffer-array
+
+            // Do the fire effect calculations
+            // This fills the destData buffer with decimal values we can
+            // translate into color data 
+            CalculateFireEffect(sourceData,destData);
+
+
+            // Get reference to our pixel buffer
+            byte[] pixelBuffer = _pixelBuffers[_pixelBufferIndex];
+
+            // We use the data in destData buffer to calculate colors
+            // and fill in the pixel buffer
+            FillInColors(destData, pixelBuffer, bytesPerPixel);
+
+            //Swap data buffers
+            _dataBufferIndex++; //
+
+            // Return pixel buffer by reference
+            return pixelBuffer;
+        }
+
+
+        //## Private helpers
+        private void FillInColors(double[] dataBuffer, byte[] pixelBuffer, int bytesPerPixel)
+        {
+            // Define base color
+            byte basecolor_R = 255;
+            byte basecolor_G = 130;
+            byte basecolor_B = 20;
+
+            int pos = 0;
+            int screenpos = 0;
+            for (int i = 0; i < Height; i++)
+            {
+                for (int j = 0; j < Width; j++)
+                {
+                    // Calculate final color
+                    byte r = (byte)(basecolor_R * dataBuffer[pos]);   // The red color contribution
+                    byte g = (byte)(basecolor_G * dataBuffer[pos]);   // The green color contribution
+                    byte b = (byte)(basecolor_B);                  // The blue color contribution
+
+                    // Set color data in pixel buffer
+                    pixelBuffer[screenpos + 0] = g;
+                    pixelBuffer[screenpos + 1] = b;
+                    pixelBuffer[screenpos + 2] = r;
+                    pixelBuffer[screenpos + 3] = 255;
+
+                    pos++;
+                    screenpos += bytesPerPixel;
+                }
+            }
+        }
+        private void InitializeDataBuffers(int width, int height, int numberOfBuffers, double startvalue = 0.0)
         {
             _dataBuffers = new List<double[]>();
 
@@ -70,12 +130,12 @@ namespace WPFPixelCanvas.Canvas.Models
         {
             _pixelBuffers = new List<byte[]>();
 
-            int size = bytesPerLine* height;
+            int size = bytesPerLine * height;
             int pos = 0;
             for (int bufferArrayIndex = 0; bufferArrayIndex < numberOfBuffers; bufferArrayIndex++)
             {
                 byte[] buffer = new byte[size];
-                for (int i = 0; i < (size-bytesperpixel); i++) 
+                for (int i = 0; i < (size - bytesperpixel); i++)
                 {
                     buffer[i + 0] = 0;
                     buffer[i + 1] = 0;
@@ -88,93 +148,39 @@ namespace WPFPixelCanvas.Canvas.Models
             }
 
             _pixelBufferIndex = 0; // Point to the first buffer
-            
+
         }
-        public byte[] Plot(int bytesPerPixel, int bytesPerLine, long refreshCounter = 0)
+        private void CalculateFireEffect(double[] sourceData, double[] destData)
         {
-            int width = Width;                          // Storing width in local variable ( caching for speed ) 
-            int height = Height;                        // ditto
-
-            //Initialize buffer if not set
-            if (_dataBuffers == null) InitializeDataBuffers(width, height, 2);
-            if (_pixelBuffers == null)
-            {
-                InitializePixelBuffers(bytesPerLine, bytesPerPixel, height, 3);
-
-            }
-
-            //Reference our data buffer
-            var sourceData = _dataBuffers[_dataBufferIndex % 2]; // %2(mod operation) rolls index around once 
-            var destData = _dataBuffers[_dataBufferIndex++ % 2]; // we reach the end of our buffer-array
-
             //Fill in bottom 3 lines with random values            
             int pos = sourceData.Length - 1; //Starting at end of buffer
-            
+
             for (int i = 0; i < 2; i++)
             {
-                for (int j = 0; j < width; j++) 
-                { sourceData[pos--] = _randomSource.NextDouble();}
+                for (int j = 0; j < Width; j++)
+                { sourceData[pos--] = _randomSource.NextDouble(); }
             }
 
             //Average values starting at the top
             pos = 0;
-            int onelineoffset = width;
-            int twolineoffset = 2 * width;
+            int onelineoffset = Width;
+            int twolineoffset = 2 * Width;
 
-            for(int i = 0; i < height - 2; i++)
+            for (int i = 0; i < Height - 2; i++)
             {
-                for (int j = 0; j < width; j++)
+                for (int j = 0; j < Width; j++)
                 {
-                    double sllp = sourceData[(pos + onelineoffset - 1 ) ];      // Second line, left pixel
-                    double slcp = sourceData[(pos + onelineoffset ) ];          //  Second line, center pixel
-                    double slrp = sourceData[(pos + onelineoffset + 1 ) ];      // Second line, right pixel
-                    double tlcp = sourceData[(pos + twolineoffset  ) ];          // Third line, center pixel
-                                                                            //                    destData[pos++] = (sllp + slcp + slrp + tlcp) / 4.1;    // Average values
-                    destData[pos] = ( sllp+slcp+slrp+tlcp )/3.985;
+                    double sllp = sourceData[(pos + onelineoffset - 1)];      // Second line, left pixel
+                    double slcp = sourceData[(pos + onelineoffset)];          //  Second line, center pixel
+                    double slrp = sourceData[(pos + onelineoffset + 1)];      // Second line, right pixel
+                    double tlcp = sourceData[(pos + twolineoffset)];          // Third line, center pixel
+                                                                              //                    destData[pos++] = (sllp + slcp + slrp + tlcp) / 4.1;    // Average values
+                    destData[pos] = (sllp + slcp + slrp + tlcp) / 4.03;
                     pos++;
                 }
             }
-
-            // Convert decimal values to color values and fill in pixel buffer
-
-
-            // Reference our pixel buffer
-            byte basecolor_R = 255;
-            byte basecolor_G = 130; // (byte)(128.0 - 127.0 * Math.Cos(refreshCounter * 0.005));
-            byte basecolor_B = 20; // (byte)(128.0 - 127.0 * Math.Sin(refreshCounter * 0.01));
-            var currentbuffer = _pixelBuffers[_pixelBufferIndex];
-
-            pos = 0;
-            int screenpos = 0;
-            for (int i = 0; i < height - 2; i++)
-            {
-                for (int j = 0; j < width; j++)
-                {
-                    byte r = (byte)(basecolor_R * destData[pos]);
-                    byte g = (byte)(basecolor_G * destData[pos]);
-                    byte b = (byte)(basecolor_B );
-
-                    currentbuffer[screenpos + 0] = g;
-                    currentbuffer[screenpos + 1] = b;
-                    currentbuffer[screenpos + 2] = r;
-                    currentbuffer[screenpos + 3] = 255;
-
-                    pos++;
-                    screenpos += bytesPerPixel;
-                }
-            }
-
-
-            
-            
-
-
-            //Swap data buffers
-            _dataBufferIndex++; //
-
-            // Return buffer by reference
-            return currentbuffer;
         }
+
     }
 }
 

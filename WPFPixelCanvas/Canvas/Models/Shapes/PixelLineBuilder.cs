@@ -8,7 +8,7 @@ namespace WPFPixelCanvas.Canvas.Models.Shapes
 {
 
     // Class that allows drawing lines
-    public class LineBuilder
+    public class PixelLineBuilder
     {
         private int _width;
         private int _height;
@@ -16,7 +16,7 @@ namespace WPFPixelCanvas.Canvas.Models.Shapes
         private int _bytesPerLine;
 
         //## Constructor(s)
-        public LineBuilder(int width, int height, int bytesPerPixel, int bytesPerLine)
+        public PixelLineBuilder(int width, int height, int bytesPerPixel, int bytesPerLine)
         {
             _width = width;
             _height = height;
@@ -183,13 +183,6 @@ namespace WPFPixelCanvas.Canvas.Models.Shapes
             }
             putPixel(buffer, x2, y2, r, g, b, a);     // Plotting point for x=x2
         }
-
-
-
-
-
-
-
 
 
         /// <summary>
