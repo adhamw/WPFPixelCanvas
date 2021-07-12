@@ -34,7 +34,9 @@ namespace WPFPixelCanvas.Canvas.ViewModels
             //Pattern_Lines  plotter = new Pattern_Lines(width, height);
             //Pattern_LineFire plotter = new Pattern_LineFire(width, height);
 
-            Pattern_Sprites  plotter = new Pattern_Sprites(width, height);
+            //Pattern_Sprites  plotter = new Pattern_Sprites(width, height);
+
+            Pattern_Boids3D plotter = new Pattern_Boids3D(width, height);
 
 
             Canvas = new CanvasManager(plotter);
