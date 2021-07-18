@@ -20,6 +20,7 @@ namespace WPFPixelCanvas.Canvas.Models.Boids3D
 
         //Constructor
         public Vector3D(double x, double y, double z) { X = x; Y = y; Z = z; }
+        public Vector3D(Vector3D other) { X = other.X; Y = other.Y; Z = other.Z; }
 
         //Public interface
         public void ClipComponentsToLimits(Vector3D minValue, Vector3D maxValue)

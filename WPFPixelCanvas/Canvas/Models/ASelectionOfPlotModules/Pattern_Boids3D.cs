@@ -7,9 +7,6 @@ using WPFPixelCanvas.Canvas.Models.Boids3D;
 
 namespace WPFPixelCanvas.Canvas.Models.PlotModules
 {
-
-
-
     // THE BOIDS 3D
     // Pretty much the same as the Pattern_Boids, except this one takes place in three dimensions.
     // 

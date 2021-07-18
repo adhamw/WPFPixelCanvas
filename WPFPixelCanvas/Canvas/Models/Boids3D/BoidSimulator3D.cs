@@ -45,8 +45,8 @@ namespace WPFPixelCanvas.Canvas.Models.Boids3D
             // Define limits
             Boid3DLimits.AccelerationMin = new Vector3D(-2.7, -2.7,-0.2);
             Boid3DLimits.AccelerationMax = new Vector3D(2.7, 2.7,0.2);
-            Boid3DLimits.VelocityMin = new Vector3D(-20.1, -20.1,-1.7);
-            Boid3DLimits.VelocityMax = new Vector3D(20.1, 20.1,1.7);
+            Boid3DLimits.VelocityMin = new Vector3D(-20.1, -20.1,-0.4);
+            Boid3DLimits.VelocityMax = new Vector3D(20.1, 20.1,0.4);
             Boid3DLimits.PositionsMin = new Vector3D(0.0, 0.0,0.1);
             Boid3DLimits.PositionsMax = new Vector3D(screenWidth - 1, screenHeight - 1,12);
 
