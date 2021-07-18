@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WPFPixelCanvas.Canvas.Models.PlotModules;
+using WPFPixelCanvas.Canvas.Models.ASelectionOfPlotModules;
 
 namespace WPFPixelCanvas.Canvas.ViewModels
 {
@@ -36,7 +37,9 @@ namespace WPFPixelCanvas.Canvas.ViewModels
 
             //Pattern_Sprites  plotter = new Pattern_Sprites(width, height);
 
-            Pattern_Boids3D plotter = new Pattern_Boids3D(width, height);
+            //Pattern_Boids3D plotter = new Pattern_Boids3D(width, height);
+            //Pattern_Woims plotter = new Pattern_Woims(width, height);
+            Pattern_Boids3DSprites plotter = new Pattern_Boids3DSprites(width, height);
 
 
             Canvas = new CanvasManager(plotter);

@@ -18,21 +18,25 @@ namespace WPFPixelCanvas.Canvas.Models.Woims
         private int _growthRate { get; set; }
         private Random _randomSource { get; set; }
         private int _size { get; set; }              //Defines number of segments ( or how large the woim is )
+        private long _refreshCount { get; set; }
+        private Woim3DLimits _headLimits { get; set; }
+        private Woim3DLimits _bodyLimits { get; set; }
 
-        private long _refreshCount;
 
 
         //## Constructor(s)
-        public Woim3D(Random randomSource, int size, int growthRate)
+        public Woim3D(Random randomSource, int size, int growthRate, Woim3DLimits bodyLimits, Woim3DLimits headLimits)
         {
             //Store parameters
             _refreshCount = 0;                          // How many times has the update call been made
             _randomSource = randomSource;               // Source for random data
-
             _growthRate = growthRate;                   // How long should woim wait between adding each new body segment
+            _headLimits = headLimits;
+            _bodyLimits = bodyLimits;
+
 
             //Create the head
-            Head = new WoimHeadSegment(randomSource);
+            Head = new WoimHeadSegment(randomSource,_headLimits);
             _size = size;                                // Number of segments
 
             //Add head to list of segments
@@ -44,7 +48,7 @@ namespace WPFPixelCanvas.Canvas.Models.Woims
         public void update()
         {
             //Determine if woim at max-segments
-            if(Segments.Count < _size && _refreshCount % _growthRate == 0)
+            if(Segments.Count < _size )
             {
                 //Determine parameters for new tail segment
                 WoimSegment positionSource = Tail ?? (WoimSegment)Head;            // Use the last available segment as source for position of new element 
@@ -53,7 +57,7 @@ namespace WPFPixelCanvas.Canvas.Models.Woims
                 Vector3D segmentVelocity = positionSource.Velocity;
 
                 // Create the new segment and set it as tail
-                Tail = new WoimBodySegment(_randomSource, segmentPosition, segmentVelocity, segmentAcceleration);
+                Tail = new WoimBodySegment(positionSource,_randomSource, _bodyLimits,segmentPosition, segmentVelocity, segmentAcceleration);
 
                 //Add new segment to the woim segment list
                 Segments.Add(Tail);
@@ -62,10 +66,10 @@ namespace WPFPixelCanvas.Canvas.Models.Woims
 
             //Update all segments
             foreach(var segment in Segments)
-            
-
+            {
+                segment.Update();
+            }
             _refreshCount++;
-
         }
 
         //## Public properties

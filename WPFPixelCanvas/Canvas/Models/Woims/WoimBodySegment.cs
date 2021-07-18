@@ -11,10 +11,13 @@ namespace WPFPixelCanvas.Canvas.Models.Woims
     {
 
         //## Constructor
-        public WoimBodySegment(Random randomsource, Vector3D position, Vector3D velocity, Vector3D acceleration) : base(randomsource, position, velocity, acceleration)
+        public WoimBodySegment(WoimSegment target, Random randomsource, Woim3DLimits limits, Vector3D position, Vector3D velocity, Vector3D acceleration) : base(randomsource, limits,position, velocity, acceleration)
         {
+            TrackingTarget = target;
+            AccelerationFactor = 4.8;                      // Affects how "fast" woim segment can turn
+            DeltaTime = 0.4;
 
-        }        
+        }
 
 
         //## Public interface
@@ -28,10 +31,10 @@ namespace WPFPixelCanvas.Canvas.Models.Woims
             UpdateAccelerationVector(TrackingTarget);                                         // Boid accelerate towards the boid it follows
 
             Velocity = Velocity + Acceleration * DeltaTime;                                     // Update boid velocity
-            Velocity.ClipComponentsToLimits(Boid3DLimits.VelocityMin, Boid3DLimits.VelocityMax);    // Ensure the velocity-value does not grow too large ( or else some boids may shoot off to far off the screen )
+            Velocity.ClipComponentsToLimits(_limits.VelocityMin, _limits.VelocityMax);    // Ensure the velocity-value does not grow too large ( or else some boids may shoot off to far off the screen )
 
             Position = Position + Velocity * DeltaTime;                                         // Update boid position
-            Position.ClipComponentsToLimits(Boid3DLimits.PositionsMin, Boid3DLimits.PositionsMax);  // Ensure position does not exceed screen values    
+            Position.ClipComponentsToLimits(_limits.PositionsMin, _limits.PositionsMax);  // Ensure position does not exceed screen values    
         }
 
         //## Public properties
@@ -53,7 +56,7 @@ namespace WPFPixelCanvas.Canvas.Models.Woims
             Vector3D accelerationTarget = AccelerationFactor * distanceToTarget * deltapos;
 
             //Ensure we don't end up with values that are too large
-            accelerationTarget.ClipComponentsToLimits(Boid3DLimits.AccelerationMin, Boid3DLimits.AccelerationMax);
+            accelerationTarget.ClipComponentsToLimits(_limits.AccelerationMin, _limits.AccelerationMax);
 
             // Weight the change ( to smoothen it a bit )
             // Using formula: new value = 2/3*new value + 1/3*oldvalue

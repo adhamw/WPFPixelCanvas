@@ -11,23 +11,28 @@ namespace WPFPixelCanvas.Canvas.Models.Woims
     public abstract class WoimSegment
     {
         //## Private fields
-        private Random _randomSource { get; set; }
+        protected Random _randomSource { get; set; }
+        protected Woim3DLimits _limits { get; set; }
 
 
         //## Constructor(s)
-        public WoimSegment(Random randomsource, Vector3D position=null, Vector3D velocity=null, Vector3D  acceleration=null )
+        public WoimSegment(Random randomsource, Woim3DLimits limits, Vector3D position=null, Vector3D velocity=null, Vector3D  acceleration=null )
         {
             //Initialize private fields
-            _randomSource = randomsource;           // Feeds us random numbers
+            _randomSource = randomsource;                   // Feeds us random numbers
+            _limits = limits;                               // Limits on velocity, acceleration and position
 
             //Default woim movement parameters
-            AccelerationFactor = 0.02;                      // Affects how "fast" woim segment can turn
-            DeltaTime = 0.01;                               // Affects .. everything
+            AccelerationFactor = 0.3;                      // Affects how "fast" woim segment can turn
+            DeltaTime = 0.3;                               // Affects .. everything
 
             Position = position??GetRandomPosition();               // Segment start at given position ( or random if none given )
             Acceleration = acceleration??GetRandomAcceleration();   // Segment start with given acceleration ( or random if none given )
             Velocity = velocity??GetRandomVelocity();               // Segment start with given velocity ( or pick at random if none given )
         }
+
+
+        //## Public interface
         public double GetDistanceFrom(WoimSegment other) { return other.Position.GetDistanceFrom(this.Position); }
         public double GetSquaredDistanceFrom(WoimSegment other) { return other.Position.GetDistanceSquaredFrom(this.Position); }
 
@@ -50,30 +55,33 @@ namespace WPFPixelCanvas.Canvas.Models.Woims
         protected Vector3D GetRandomAcceleration()
         {
             if (_randomSource == null) { _randomSource = new Random(); }
-            double x = Boid3DLimits.AccelerationMin.X + _randomSource.NextDouble() * (Boid3DLimits.AccelerationMax.X - Boid3DLimits.AccelerationMin.X);
-            double y = Boid3DLimits.AccelerationMin.Y + _randomSource.NextDouble() * (Boid3DLimits.AccelerationMax.Y - Boid3DLimits.AccelerationMin.Y);
-            double z = Boid3DLimits.AccelerationMin.Z + _randomSource.NextDouble() * (Boid3DLimits.AccelerationMax.Z - Boid3DLimits.AccelerationMin.Z);
+            double x = _limits.AccelerationMin.X + _randomSource.NextDouble() * (_limits.AccelerationMax.X - _limits.AccelerationMin.X);
+            double y = _limits.AccelerationMin.Y + _randomSource.NextDouble() * (_limits.AccelerationMax.Y - _limits.AccelerationMin.Y);
+            double z = _limits.AccelerationMin.Z + _randomSource.NextDouble() * (_limits.AccelerationMax.Z - _limits.AccelerationMin.Z);
 
             return new Vector3D(x, y, z);
         }
         protected Vector3D GetRandomVelocity()
         {
             if (_randomSource == null) { _randomSource = new Random(); }
-            double x = Boid3DLimits.VelocityMin.X + _randomSource.NextDouble() * (Boid3DLimits.VelocityMax.X - Boid3DLimits.VelocityMin.X);
-            double y = Boid3DLimits.VelocityMin.Y + _randomSource.NextDouble() * (Boid3DLimits.VelocityMax.Y - Boid3DLimits.VelocityMin.Y);
-            double z = Boid3DLimits.VelocityMin.Z + _randomSource.NextDouble() * (Boid3DLimits.VelocityMax.Z - Boid3DLimits.VelocityMin.Z);
+            double x = _limits.VelocityMin.X + _randomSource.NextDouble() * (_limits.VelocityMax.X - _limits.VelocityMin.X);
+            double y = _limits.VelocityMin.Y + _randomSource.NextDouble() * (_limits.VelocityMax.Y - _limits.VelocityMin.Y);
+            double z = _limits.VelocityMin.Z + _randomSource.NextDouble() * (_limits.VelocityMax.Z - _limits.VelocityMin.Z);
 
             return new Vector3D(x, y, z);
         }
         protected Vector3D GetRandomPosition()
         {
-            if (_randomSource == null) { _randomSource = new Random(); }
-            double x = Boid3DLimits.PositionsMin.X + _randomSource.NextDouble() * (Boid3DLimits.PositionsMax.X - Boid3DLimits.PositionsMin.X);
-            double y = Boid3DLimits.PositionsMin.Y + _randomSource.NextDouble() * (Boid3DLimits.PositionsMax.Y - Boid3DLimits.PositionsMin.Y);
-            double z = Boid3DLimits.PositionsMin.Z + _randomSource.NextDouble() * (Boid3DLimits.PositionsMax.Z - Boid3DLimits.PositionsMin.Z);
+            //if (_randomSource == null) { _randomSource = new Random(); }
+            double x = _limits.PositionsMin.X + _randomSource.NextDouble() * (_limits.PositionsMax.X - _limits.PositionsMin.X);
+            double y = _limits.PositionsMin.Y + _randomSource.NextDouble() * (_limits.PositionsMax.Y - _limits.PositionsMin.Y);
+            double z = _limits.PositionsMin.Z + _randomSource.NextDouble() * (_limits.PositionsMax.Z - _limits.PositionsMin.Z);
 
             return new Vector3D(x, y, z);
         }
+
+
+
 
     }
 }
