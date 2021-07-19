@@ -39,7 +39,9 @@ namespace WPFPixelCanvas.Canvas.ViewModels
 
             //Pattern_Boids3D plotter = new Pattern_Boids3D(width, height);
             //Pattern_Woims plotter = new Pattern_Woims(width, height);
-            Pattern_Boids3DSprites plotter = new Pattern_Boids3DSprites(width, height);
+            //Pattern_Boids3DSprites plotter = new Pattern_Boids3DSprites(width, height);
+
+            Pattern_Moire plotter = new Pattern_Moire(width, height);
 
 
             Canvas = new CanvasManager(plotter);
