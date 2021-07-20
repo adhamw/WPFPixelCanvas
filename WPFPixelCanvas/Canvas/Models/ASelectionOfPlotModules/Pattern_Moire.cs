@@ -28,7 +28,7 @@ namespace WPFPixelCanvas.Canvas.Models.ASelectionOfPlotModules
         {
             Width = width;      // Defines width of plot area ( e.g. 800 pixels )
             Height = height;    // Defines height of plot area ( e.g. 600 pixels )
-            _ringSize = 12;     // Higher values gives less color impact
+            _ringSize = 8;     // Higher values gives less color impact
             _randomSource = new Random(); // Source for random data
         }
 
@@ -49,8 +49,8 @@ namespace WPFPixelCanvas.Canvas.Models.ASelectionOfPlotModules
 
                 //Define generators
                 _moireGenerator = new(_buffer, Width, Height, _ringSize, bytesperpixel, linePadding);
-                _pathGeneratorFP1 = new(new(-600, -500, 1), new(800, 700, 1), 0.01);
-                _pathGeneratorFP2 = new(new(-100, -100, 1), new(600, 500, 1), 0.02);
+                _pathGeneratorFP1 = new(new(-600, -500, 1), new(800, 700, 1), 0.004);
+                _pathGeneratorFP2 = new(new(-100, -100, 1), new(600, 500, 1), 0.012);
                 _pathGeneratorFP2.SetPathType(PathTypes.Lissajous1);
             }
 
@@ -59,7 +59,8 @@ namespace WPFPixelCanvas.Canvas.Models.ASelectionOfPlotModules
             Vector3D fp2 = _pathGeneratorFP2.GetNextPoint();
 
             // Create moire pattern
-            _moireGenerator.Update(fp1, fp2);
+            //_moireGenerator.Update(fp1, fp2);     // Grey scale moire
+            _moireGenerator.UpdateColor(fp1, fp2);  // Color-coded moire
 
             //Return buffer ( reference value )
             return _buffer;
