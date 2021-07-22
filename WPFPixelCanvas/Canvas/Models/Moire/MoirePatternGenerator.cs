@@ -11,8 +11,8 @@ namespace WPFPixelCanvas.Canvas.Models.Moire
     public class MoirePatternGenerator
     {
         //## Private fields
-        private int Width { get; set; }
-        private int Height { get; set; }
+        private int _width { get; set; }
+        private int _height { get; set; }
         private Vector3D _colorA { get; set; }
         private Vector3D _colorB { get; set; }
         private int _ringSize { get; set; }
@@ -25,8 +25,8 @@ namespace WPFPixelCanvas.Canvas.Models.Moire
         public MoirePatternGenerator(byte[] pixelBuffer, int width, int height, int ringSize, int bytesPerPixel, int linePaddingBytes)
         {
             //Storing parameters
-            Width = width;
-            Height = height;
+            _width = width;
+            _height = height;
             _ringSize = ringSize;
             _bytesPerPixel = bytesPerPixel;
             _linePaddingBytes = linePaddingBytes;
@@ -48,9 +48,9 @@ namespace WPFPixelCanvas.Canvas.Models.Moire
             int bufferPos = 0;
 
             // Go through every x and y
-            for (int y = 0; y < Height; y++)
+            for (int y = 0; y < _height; y++)
             {
-                for (int x = 0; x < Width; x++)
+                for (int x = 0; x < _width; x++)
                 {
                     int value = CalculateMoireValue(focalPoints, x, y);
 
@@ -82,9 +82,9 @@ namespace WPFPixelCanvas.Canvas.Models.Moire
             int bufferPos = 0;
 
             // Go through every value for x and y
-            for (int y = 0; y < Height; y++)
+            for (int y = 0; y < _height; y++)
             {
-                for (int x = 0; x < Width; x++)
+                for (int x = 0; x < _width; x++)
                 {
                     // Generate moire value for given pixel
                     int value = CalculateMoireValue(focalPoints, x, y);

@@ -8,6 +8,6 @@ namespace WPFPixelCanvas.Canvas.Models.PathGenerator
 {
     public enum PathTypes
     {
-        Circle, Lissajous1
+        Circle, Lissajous2D, Lissajous3D
     }
 }

@@ -51,7 +51,7 @@ namespace WPFPixelCanvas.Canvas.Models.ASelectionOfPlotModules
                 _moireGenerator = new(_buffer, Width, Height, _ringSize, bytesperpixel, linePadding);
                 _pathGeneratorFP1 = new(new(-600, -500, 1), new(800, 700, 1), 0.004);
                 _pathGeneratorFP2 = new(new(-100, -100, 1), new(600, 500, 1), 0.012);
-                _pathGeneratorFP2.SetPathType(PathTypes.Lissajous1);
+                _pathGeneratorFP2.SetPathType(PathTypes.Lissajous2D);
             }
 
             //Use path points as focal points ( so we get some movement )
