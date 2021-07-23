@@ -23,9 +23,12 @@ namespace WPFPixelCanvas.Canvas.Models.ASelectionOfPlotModules
         private PathGeneratorSource _pathGeneratorFP4;
 
         private BlobManager _blobManager;
+        Blob[] _blobs = null;
+        Stopwatch _StopWatch;
+
 
         //Constructor
-        
+
         public Pattern_Blobs(int width, int height)
         {
             Width = width;                  // Defines width of plot area ( e.g. 800 pixels )
@@ -37,120 +40,90 @@ namespace WPFPixelCanvas.Canvas.Models.ASelectionOfPlotModules
         public int Width { get; private set; }
         public int Height { get; private set; }
 
+
         //Public interface
-        Blob[] _blobs = null;
-        Stopwatch sw;
-        public byte[] Plot(int bytesPerPixel, int bytesperline, long refreshcounter = 0)
+        public byte[] Plot(int bytesPerPixel, int bytesPerLine, long refreshcounter = 0)
         {
             //Initialize buffer and generator if not set
-            int bytesinbuffer = bytesperline * Height;  // Number of bytes needed for the whole buffer
-
             if (_buffer == null)
             {
-                // Set up buffer
-                _buffer = new byte[bytesinbuffer];
-                int linePadding = bytesperline - Width * bytesPerPixel;
-                for (int i = 0; i < bytesinbuffer; i++)
-                {
+                // Set up necessary structures
+                int bytesInBuffer = bytesPerLine * Height;  // Number of bytes needed for the whole buffer
+                InitBuffers(bytesInBuffer);     // The graphics buffer
+                InitPathGenerators();           // The paths the blobs will take
+                DefineBlobs();                  // The blob objects
 
-                    _buffer[i] = (byte)((i % 4 == 0) ? 255 : 0);
-                }
-
-
-                //Define generators
-                _pathGeneratorFP1 = new(new(0, 0, 0.1), new(500, 400, 1), 0.03);
-                _pathGeneratorFP1.SetPathType(PathTypes.Lissajous3D);
-                _pathGeneratorFP2 = new(new(0, 0, 0.1), new(500, 400, 1), 0.03);
-                _pathGeneratorFP2.SetPathType(PathTypes.Lissajous3D);
-                _pathGeneratorFP2.OffsetAngleBy(0.9);
-                _pathGeneratorFP3 = new(new(0, 0, 0.1), new(500, 400, 1), 0.03);
-                _pathGeneratorFP3.SetPathType(PathTypes.Lissajous3D);
-                _pathGeneratorFP3.OffsetAngleBy(1.8);
-                _pathGeneratorFP4 = new(new(0, 0, 0.1), new(500, 400, 1), 0.03);
-                _pathGeneratorFP4.SetPathType(PathTypes.Lissajous3D);
-                _pathGeneratorFP4.OffsetAngleBy(2.4);
-
-                //Calculate blob positions
-                _blobs = new Blob[4];
-                _blobs[0] = new Blob()
-                {
-                    BaseColor = new Vector3D(205, 0, 0),
-                    Position = _pathGeneratorFP1.GetNextPoint(),
-                    Strength = 15.1,
-                };
-                _blobs[1] = new Blob()
-                {
-                    BaseColor = new Vector3D(0, 255, 0),
-                    Position = _pathGeneratorFP2.GetNextPoint(),
-                    Strength = 1.8,
-                };
-                _blobs[2] = new Blob()
-                {
-                    BaseColor = new Vector3D(10,10 ,255),
-                    Position = _pathGeneratorFP3.GetNextPoint(),
-                    Strength = 10.8,
-                };
-
-                _blobs[3] = new Blob()
-                {
-                    BaseColor = new Vector3D(255, 255, 255),
-                    Position = _pathGeneratorFP4.GetNextPoint(),
-                    Strength = 5.7,
-                };
-
+                // Create manager object for blobs
+                int linePadding = bytesPerLine - Width * bytesPerPixel;
                 _blobManager = new BlobManager(_blobs,_buffer, Width, Height, bytesPerPixel, linePadding);
 
-                sw = new Stopwatch();
-                
-            }
-
-
-
-            //// Add '1' to every pixel on screen untill max value reached.
-            //// This will have the effect of fading the screen to white.
-            //// As boids are redrawn to the screen at full color, this creates
-            //// boid trails.
-            //int pos = 0;
-
-            //for (int i = 0; i < Height; i++)
-            //{
-            //    for (int j = 0; j < Width; j++)
-            //    {
-            //        int bufferval = _buffer[pos + 0];
-            //        _buffer[pos + 0] = _buffer[pos + 0] < 254 ? (byte)(_buffer[pos + 0] + 2) : (byte)255;
-            //        _buffer[pos + 1] = _buffer[pos + 1] < 254 ? (byte)(_buffer[pos + 1] + 2) : (byte)255;
-            //        _buffer[pos + 2] = _buffer[pos + 2] < 254 ? (byte)(_buffer[pos + 2] + 2) : (byte)255;
-            //        _buffer[pos + 3] = 255; // _buffer[pos + 2] < 255 ? (byte)(_buffer[pos + 2] + 1) : (byte)255;
-            //        pos += bytesPerPixel;
-            //    }
-            //}
-
-            //Clear screen
-            for (int i = 0; i < bytesinbuffer; i++)
-            {
-                _buffer[i] = (byte)((i % 4 == 0) ? 255 : 0);
             }
 
             //Update our bobs-object
-            //sw.Start();
             _blobManager.Update();
-            //if (refreshcounter == 30)
-            //{
-            //    sw.Stop();
-            //    var value = sw.ElapsedMilliseconds;
-            //    bool stophere = true;
 
-            //}
-
-            //Update blop-point positions
-            _blobs[0].Position = _pathGeneratorFP1.GetNextPoint();
-            _blobs[1].Position = _pathGeneratorFP2.GetNextPoint();
-            _blobs[2].Position = _pathGeneratorFP3.GetNextPoint();
-            _blobs[3].Position = _pathGeneratorFP4.GetNextPoint();
+            //Update blob positions
+            for(int i=0;i<4;i++) { _blobs[i].Position = _pathGenerators[i].GetNextPoint();}
 
             //Return buffer ( reference value )
             return _buffer;
         }
+
+
+        //## Private helpers
+        private PathGeneratorSource[] _pathGenerators;
+        private void InitPathGenerators()
+        {
+            //Define generators
+            _pathGenerators = new PathGeneratorSource[4];
+            for(int i=0;i<4;i++) 
+            { 
+                _pathGenerators[i]  = new(new(0, 0, 0.1), new(500, 400, 1), 0.03); 
+                _pathGenerators[i].SetPathType(PathTypes.Lissajous3D);
+            }
+            //Give each blob different starting points ( along the same path )
+            _pathGenerators[1].OffsetAngleBy(0.9);
+            _pathGenerators[2].OffsetAngleBy(1.8);
+            _pathGenerators[3].OffsetAngleBy(2.4);
+        }
+        private void InitBuffers(int bytesInBuffer)
+        {
+            // Set up buffer
+            _buffer = new byte[bytesInBuffer];
+            for (int i = 0; i < bytesInBuffer; i++) { _buffer[i] = (byte)((i % 4 == 0) ? 255 : 0); }
+        }
+        private void DefineBlobs()
+        {
+            //Calculate blob positions
+            _blobs = new Blob[4];
+            _blobs[0] = new Blob()
+            {
+                BaseColor = new Vector3D(205, 0, 0),
+                Position = _pathGenerators[0].GetNextPoint(),
+                Strength = 15.1,
+            };
+            _blobs[1] = new Blob()
+            {
+                BaseColor = new Vector3D(0, 255, 0),
+                Position = _pathGenerators[1].GetNextPoint(),
+                Strength = 1.8,
+            };
+            _blobs[2] = new Blob()
+            {
+                BaseColor = new Vector3D(10, 10, 255),
+                Position = _pathGenerators[2].GetNextPoint(),
+                Strength = 10.8,
+            };
+
+            _blobs[3] = new Blob()
+            {
+                BaseColor = new Vector3D(255, 255, 255),
+                Position = _pathGenerators[3].GetNextPoint(),
+                Strength = 5.7,
+            };
+
+        }
+
     }
 }
 

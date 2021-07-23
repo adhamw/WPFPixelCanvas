@@ -18,14 +18,13 @@ namespace WPFPixelCanvas.Canvas.Models.Blobs
         private int _pixelBufferSize { get; set; }
 
         private Blob[] _blobs { get; set; }
-
-        //private double[,] _multiplicationTable { get; set; }
+        double[] _blobStrengths;
         private double[] _dataBuffer;
 
         //## Constructor(s)
         public BlobManager(Blob[] blobs, byte[] pixelBuffer, int width, int height, int bytesPerPixel, int linePaddingBytes)
         {
-            //Storing parameters
+            //Storing incoming parameters
             _width = width;
             _height = height;
             _bytesPerPixel = bytesPerPixel;
@@ -36,146 +35,144 @@ namespace WPFPixelCanvas.Canvas.Models.Blobs
             //Create data buffer
             _pixelBufferSize = (_width* _bytesPerPixel +_linePaddingBytes)*_height;
             _dataBuffer = new double[_pixelBufferSize];
-            blobstrengths = new double[_pixelBufferSize];
-
-
-            // Define array that can hold temp values for each blob's strength
-            //_blobStrengths = new double[blobs.Length];
-
-            // Create multiplication table
-            
-            //_multiplicationTable = new double[(width+1)*2, (height+1)*2];
-            //for(int i = -(height+1); i < (height+1); i++)
-            //{
-            //    for(int j = -(width+1); j < (width+1); j++)
-            //    {
-            //        _multiplicationTable[j+width+1, i+height+1] = Math.Sqrt((i * i) + (j * j));
-            //    }
-            //}
-
+            _blobStrengths = new double[_pixelBufferSize];
         }
 
-        //## Public interface
-        //public void UpdateOld()
-        //{
-        //    // Index tracking position in our pixel buffer
-        //    int bufferPos = 0;
-        //    _blobStrengths = new double[_blobs.Length];
 
-        //    // Go through every x and y
-        //    for (int y = 0; y < _height; y++)
-        //    {
-        //        for (int x = 0; x < _width; x++)
-        //        {
-        //            Vector3D color = CalculateBlobContribution(x,y);
-                    
-
-        //            //Set the color values in buffer                   
-        //            _pixelBuffer[bufferPos + 0] = (byte)(color.X%255 );
-        //            _pixelBuffer[bufferPos + 1] = (byte)(color.Y%255 );
-        //            _pixelBuffer[bufferPos + 2] = (byte)(color.Z%255 );
-        //            _pixelBuffer[bufferPos + 3] = (byte)255;
-
-        //            // Update the buffer index
-        //            bufferPos += _bytesPerPixel;
-        //        }
-
-        //        //Add padding for each line ( in case there is any ) 
-        //        bufferPos += _linePaddingBytes;
-        //    }
-        //}
-
-        double[] blobstrengths; // = new double[_pixelBufferSize];
         public void Update()
         {
+            //Declaring local variables
             double blobStrengthBase, blobX, blobY;
-            double blobStrength, distX, distY, distZ, distance;
+            double blobStrength, distX, distY,  distance;
+            Blob blob; Vector3D colorContribution;
+
+            // Local references to class variables            
             int bytesPerPixel = _bytesPerPixel;
             int linePaddingBytes = _linePaddingBytes;
-
-            Blob blob;
-            Vector3D colorContribution;
-            Vector3D blobPosition;
-
-            //double[] pb = new double[_pixelBufferSize];
-            double[] pb = _dataBuffer;
-            for (int i = 0; i < _pixelBufferSize; i++ )
-            {
-                pb[i] = i%4 == 3 ? 255: 0;
-                blobstrengths[i] = 0;
-            }
-
+            byte[] pixelBuffer = _pixelBuffer;
+            double[] dataBuffer = _dataBuffer;
+            double[] blobStrengths = _blobStrengths;
             int numberOfBlobs = _blobs.Length;
             Blob[] blobs = _blobs;
 
-            // Index tracking position in our pixel buffer
-            int bufferPos = 0;
-            //_blobStrengths = new double[_blobs.Length];
+            // Index tracking position in buffers
+            int bufferPos;
 
-            //For every blob
-            double maxDistance = _width > _height ? _width : _height;
+            // Clearing buffers. 
+            // Note that buffers are arranged just like the pixelbuffer
+            // These are used to hold partially computed color values
+            bufferPos = 0;
+            for (int y = 0; y < _height; y++)
+            {
+                for (int x = 0; x < _width; x++)
+                {
+                    dataBuffer[bufferPos + 0] = 0;
+                    dataBuffer[bufferPos + 1] = 0;
+                    dataBuffer[bufferPos + 2] = 0;
+                    dataBuffer[bufferPos + 3] = 255;
+                    blobStrengths[bufferPos + 0] = 0;
+                    blobStrengths[bufferPos + 1] = 0;
+                    blobStrengths[bufferPos + 2] = 0;
+                    blobStrengths[bufferPos + 3] = 255;
+
+                    bufferPos += bytesPerPixel;
+                }
+                bufferPos += linePaddingBytes;
+
+            }
+
+            // Main calculation loop
+            // For every blob point, we calculate the contribution from the blob onto each pixel.
+
+            // Contribution is determined from relationship :
+            // = (distance between blob and pixel)/(Max distance)   ##
+            // = (Max distance) / (distance)                        ## However, we want maximum contribution when distance is zero, so we invert the relationship.
+            // = (Max distance ) / (1+distance)                     ## Distance will be '0' or larger, but we cannot divide by '0' so we add '1' to the denominator
+            // = BlobStrength * (Max distance ) / (1+distance)      ## Each blob has a strength factor
+            //
+            // Finally, each blob has a defined color, so we multiply by color (vector)
+            // to get a contribution per component:
+            // Contribution = [Base color(r,g,b)] * BlobStrength * (Max distance ) / (1+distance)
+            
+            double maxDistance = _width > _height ? _width : _height; // Choose whichever is greater ( width or height ) as the max value for distance
             for (int i = 0; i < numberOfBlobs; i++)
             {
+                blob = blobs[i];                    // Reference the blob object
+                blobStrengthBase = blob.Strength;   // Reference the blob strength value
+                blobX = blob.Position.X;            // Reference the blob position
+                blobY = blob.Position.Y;            // ditto
+                Vector3D baseColor = blob.BaseColor;// Reference the blob base color
 
-                blob = blobs[i];
-                blobStrengthBase = blob.Strength;
-                blobX = blob.Position.X;
-                blobY = blob.Position.Y;
-
+                //Calculate blob contribution for every pixel/coordinate
                 bufferPos = 0;
-                Vector3D baseColor = blob.BaseColor;
-
-                //Run through pixels and apply blob effect
                 for (int y = 0; y < _height; y++)
                 {
                     for (int x = 0; x < _width; x++)
                     {
-                        distX = blobX - x;
-                        distY = blobY - y;
-                        //distZ = blobPosition.Z;
-                        distance = Math.Sqrt(distX * distX + distY * distY) ;
-                        blobStrength =  blobStrengthBase * (maxDistance / (1 + distance));                  // The effect of a blob on a pixel
-                        colorContribution = blobStrength * baseColor;
+                        // Calculate the distance between pixel and blob
+                        distX = blobX - x;                                      // Horizontal distance between blob and pixel
+                        distY = blobY - y;                                      // Vertical distance between blob and pixel
+                        distance = Math.Sqrt(distX * distX + distY * distY);    // Point distance between pixel and blob
 
-                        blobstrengths[bufferPos + 0] += blobStrength; // Note using same buffer layout as databuffer
+                        // Calculate blob contribution to this pixel
+                        blobStrength =  blobStrengthBase * (maxDistance / (1 + distance));
+                        colorContribution = blobStrength * baseColor;           // The effect of a blob on a pixel
 
-                        //Set the color values in buffer                   
-                        pb[bufferPos + 0] += colorContribution.X;
-                        pb[bufferPos + 1] += colorContribution.Y;
-                        pb[bufferPos + 2] += colorContribution.Z;
+                        // Record the total applied blobstrengths per pixel
+                        blobStrengths[bufferPos + 0] += blobStrength;           // Allows normalizing the color value. ( I.e. we are scaling by 'contribution/total contribution' )
+
+                        //Set the intermediate color values in buffer           // Values must be normalized, but can't do that until 
+                        dataBuffer[bufferPos + 0] += colorContribution.X;       // we know the total blobstrength which we will find out 
+                        dataBuffer[bufferPos + 1] += colorContribution.Y;       // after all pixels/blobs has been processed
+                        dataBuffer[bufferPos + 2] += colorContribution.Z;       // Awaiting that result, we store contributions in the data buffer
                         
-
                         // Update the buffer index
                         bufferPos += bytesPerPixel;
-
                     }
+
                     //Add padding for each line ( in case there is any ) 
                     bufferPos += linePaddingBytes;
                 }
             }
 
-            // Convert generated data to colordata
-            int bsindex = 0;
-            for(int i=0;i<_pixelBufferSize; i++)
+            // Normalize values and store in output buffer
+            int currpos;double value;
+            bufferPos = 0;
+
+            for (int y = 0; y < _height; y++)
             {
-                if (i % 4 == 3) 
-                { 
-                    bsindex += 4;
-                    _pixelBuffer[i] = 255;
-                }
-                else
-
+                for (int x = 0; x < _width; x++)
                 {
-                    double value = pb[i] / blobstrengths[bsindex];
-                    if (value > 55.0) { value = (1.28*value-70); }
-                    _pixelBuffer[i] += (byte)(value);
+                    //Setting the r,g,b valuse
+                    for(int component = 0; component < 3; component++)
+                    {
+                        currpos = bufferPos + component;                                // bufferPos+0 -> G, bufferPos+1 -> B, bufferPos+2 -> R
+                        double totalBlobStrengthOnPixel = blobStrengths[bufferPos];     // The sum of all blob contributions on pixel at pos x,y
+                        value = (byte)(dataBuffer[currpos] / totalBlobStrengthOnPixel); // Normalize contribution value by dividing by total Contribution value
 
+                        // Adjusting values so we get more "blob" like behavior.
+                        // We are creating a divide at componentvalues of 55 or more by 
+                        // multiplying such values by 1.28. We then subtract a value
+                        // to avoid ugly black spot in the middle
+                        // Note remove this, and you get pretty light-sources moving about
+                        // but not so "blob"-like anynmore.
+                        if (value > 55.0) { value = (1.28 * value - 70); }              
+
+                        //Assign value to our buffer
+                        pixelBuffer[currpos] = (byte)value;
+                    }
+
+                    // Fourth byte is alpha. Setting to no transparency.
+                    currpos = bufferPos + 3;
+                    pixelBuffer[currpos] = 255;
+
+                    // Move index forward
+                    bufferPos += bytesPerPixel;
                 }
+                //Add padding for each line ( in case there is any ) 
+                bufferPos += linePaddingBytes;
             }
-
         }
-
-
     }
 
 }
